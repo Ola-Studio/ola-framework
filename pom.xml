@@ -11,6 +11,7 @@
     <modules>
         <module>ola-crud</module>
         <module>ola-common</module>
+        <module>ola-server</module>
     </modules>
 
     <properties>

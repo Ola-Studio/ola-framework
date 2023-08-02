@@ -1,8 +1,11 @@
 package io.ola.common.utils;
 
 import cn.hutool.extra.spring.SpringUtil;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * @author yiuman
@@ -23,5 +26,19 @@ public final class SpringUtils extends SpringUtil {
         }
 
         return (T) bean;
+    }
+
+    public static Object getSpringProxy() {
+        Object proxy = null;
+        try {
+            proxy = AopContext.currentProxy();
+        } catch (IllegalStateException ignore) {
+        }
+        return proxy;
+    }
+
+    public static Object getSpringProxyOrThis(Object thisObject) {
+        Object springProxy = getSpringProxy();
+        return Optional.ofNullable(springProxy).orElse(thisObject);
     }
 }

@@ -5,6 +5,9 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.ola.common.utils.SpringUtils;
+import io.ola.crud.enums.Clauses;
+import io.ola.crud.model.QueryFieldMeta;
+import io.ola.crud.query.annotation.QueryField;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.MergedAnnotation;
 

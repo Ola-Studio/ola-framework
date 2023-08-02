@@ -1,4 +1,4 @@
-package io.ola.crud.query;
+package io.ola.crud.enums;
 
 /**
  * 查询子句

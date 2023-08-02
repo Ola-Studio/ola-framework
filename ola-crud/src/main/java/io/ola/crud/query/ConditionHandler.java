@@ -1,6 +1,7 @@
 package io.ola.crud.query;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import io.ola.crud.model.QueryFieldMeta;
 
 import java.util.function.Consumer;
 

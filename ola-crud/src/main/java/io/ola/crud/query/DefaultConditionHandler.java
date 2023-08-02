@@ -5,6 +5,7 @@ import com.mybatisflex.core.constant.SqlConsts;
 import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryCondition;
 import com.mybatisflex.core.query.QueryWrapper;
+import io.ola.crud.model.QueryFieldMeta;
 
 import java.util.function.Consumer;
 

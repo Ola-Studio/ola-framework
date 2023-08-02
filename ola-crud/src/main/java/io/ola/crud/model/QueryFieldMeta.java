@@ -1,5 +1,8 @@
-package io.ola.crud.query;
+package io.ola.crud.model;
 
+import io.ola.crud.enums.Clauses;
+import io.ola.crud.query.ConditionHandler;
+import io.ola.crud.query.annotation.QueryField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

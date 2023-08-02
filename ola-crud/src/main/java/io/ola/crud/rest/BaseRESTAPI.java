@@ -1,50 +1,33 @@
 package io.ola.crud.rest;
 
-import cn.hutool.core.annotation.AnnotationUtil;
-import cn.hutool.core.lang.TypeReference;
-import cn.hutool.core.util.TypeUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import io.ola.common.http.R;
+import io.ola.common.utils.SpringUtils;
 import io.ola.common.utils.WebUtils;
-import io.ola.crud.query.Query;
+import io.ola.crud.CRUD;
 import io.ola.crud.query.QueryHelper;
+import io.ola.crud.service.CRUDService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.core.ResolvableType;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.Objects;
 
 
 /**
+ * CRUD基本接口
+ *
  * @author yiuman
  * @date 2023/7/25
  */
+@SuppressWarnings("unchecked")
 public interface BaseRESTAPI<ENTITY> {
-    Map<Class<?>, IService<?>> SERVICE_MAP = new HashMap<>();
 
-    @SuppressWarnings("unchecked")
-    default IService<ENTITY> getService() {
-        IService<ENTITY> iService = (IService<ENTITY>) SERVICE_MAP.get(getClass());
-        if (Objects.nonNull(iService)) {
-            return iService;
-        }
-        TypeReference<IService<ENTITY>> reference = new TypeReference<>() {
-        };
-        Type typeArgument = TypeUtil.getTypeArgument(getClass(), 0);
-        final ParameterizedType parameterizedType = (ParameterizedType) reference.getType();
-        final Class<IService<ENTITY>> rawType = (Class<IService<ENTITY>>) parameterizedType.getRawType();
-        final Class<?>[] genericTypes = new Class[]{(Class<?>) typeArgument};
-        final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
-        iService = SpringUtil.getBean(beanNames[0], rawType);
-        SERVICE_MAP.put(getClass(), iService);
-        return iService;
+    default CRUDService<ENTITY> getService() {
+        return CRUD.getService((Class<? extends BaseRESTAPI<ENTITY>>) getClass());
     }
 
     @GetMapping
@@ -54,29 +37,51 @@ public interface BaseRESTAPI<ENTITY> {
         return getService().page(mfPage, buildWrapper(request));
     }
 
-    default QueryWrapper buildWrapper(HttpServletRequest request) {
-        Query query = AnnotationUtil.getAnnotation(getClass(), Query.class);
-        if (Objects.isNull(query)) {
-            return QueryWrapper.create();
-        }
-        Object queryObject = WebUtils.requestDataBind(query.value(), request);
-        return QueryHelper.build(queryObject);
-    }
-
     @GetMapping("/{id}")
-    default R<ENTITY> get(@PathVariable String id) {
-        return R.ok(getService().getById(id));
+    default R<ENTITY> get(@PathVariable Serializable id) {
+        return R.ok(getService().get(id));
     }
 
     @PostMapping
     default R<ENTITY> post(@RequestBody ENTITY entity) {
-        getService().saveOrUpdate(entity);
+        getService().save(entity);
+        return R.ok(entity);
+    }
+
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    default R<ENTITY> form(ENTITY entity) {
+        getService().save(entity);
         return R.ok(entity);
     }
 
     @DeleteMapping("/{id}")
-    default R<Void> delete(@PathVariable String id) {
-        getService().removeById(id);
+    default R<Void> delete(@PathVariable Serializable id) {
+        getService().delete(id);
         return R.ok();
+    }
+
+    /**
+     * 构建查询
+     *
+     * @param request http请求
+     * @return 查询包装器
+     */
+    default QueryWrapper buildWrapper(HttpServletRequest request) {
+        Class<?> queryClass = CRUD.getQueryClass((Class<? extends BaseRESTAPI<ENTITY>>) getClass());
+        if (Objects.isNull(queryClass)) {
+            return QueryWrapper.create();
+        }
+        Object queryObject = WebUtils.requestDataBind(queryClass, request);
+        return QueryHelper.build(queryObject);
+    }
+
+    /**
+     * 当前当前代理
+     *
+     * @param <CRUD_INSTANCE> CRUD实例
+     * @return 代理类
+     */
+    default <CRUD_INSTANCE extends BaseRESTAPI<ENTITY>> CRUD_INSTANCE getProxy() {
+        return (CRUD_INSTANCE) SpringUtils.getSpringProxyOrThis(this);
     }
 }

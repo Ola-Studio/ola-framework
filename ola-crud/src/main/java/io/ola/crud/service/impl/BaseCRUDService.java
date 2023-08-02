@@ -68,7 +68,6 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
     @Override
     public void deleteByQuery(QueryWrapper queryWrapper) {
         dao.deleteByQuery(queryWrapper);
-        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override

@@ -12,6 +12,7 @@ import io.ola.crud.annotation.BeforeSave;
 import io.ola.crud.annotation.BeforeUpdate;
 import io.ola.crud.annotation.DeleteTag;
 import io.ola.crud.annotation.Sort;
+import io.ola.crud.inject.Injector;
 import io.ola.crud.model.CRUDMeta;
 import io.ola.crud.model.EntityMeta;
 import io.ola.crud.model.InjectFieldMeta;
@@ -139,7 +140,7 @@ public final class CRUD {
             injectFieldMeta.setField(field);
             injectFieldMeta.setAnnotation(annotation);
             Map<String, ?> memberValues = (Map<String, ?>) ReflectUtil.getFieldValue(Proxy.getInvocationHandler(annotation), "memberValues");
-            injectFieldMeta.setInjectorClass((Class<?>) memberValues.get("value"));
+            injectFieldMeta.setInjectorClass((Class<? extends Injector>) memberValues.get("value"));
             injectFieldMeta.setForce((Boolean) memberValues.get("force"));
             return injectFieldMeta;
         }).filter(Objects::nonNull).collect(Collectors.toList());

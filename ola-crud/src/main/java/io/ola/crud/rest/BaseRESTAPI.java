@@ -44,14 +44,12 @@ public interface BaseRESTAPI<ENTITY> {
 
     @PostMapping
     default R<ENTITY> post(@RequestBody ENTITY entity) {
-        getService().save(entity);
-        return R.ok(entity);
+        return R.ok(getService().save(entity));
     }
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     default R<ENTITY> form(ENTITY entity) {
-        getService().save(entity);
-        return R.ok(entity);
+        return R.ok(getService().save(entity));
     }
 
     @DeleteMapping("/{id}")

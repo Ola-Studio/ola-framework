@@ -1,6 +1,10 @@
 package io.ola.crud.model;
 
 import com.mybatisflex.annotation.Id;
+import io.ola.crud.annotation.BeforeSave;
+import io.ola.crud.annotation.BeforeUpdate;
+import io.ola.crud.inject.UserIdInjector;
+import io.ola.crud.inject.impl.NowInjector;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,8 +17,12 @@ import java.util.Date;
 public class BaseEntity<KEY> {
     @Id
     private KEY id;
+    @BeforeSave(UserIdInjector.class)
     private String creator;
+    @BeforeUpdate(UserIdInjector.class)
     private String lastModifier;
+    @BeforeSave(NowInjector.class)
     private Date createTime;
+    @BeforeUpdate(NowInjector.class)
     private Date updateTime;
 }

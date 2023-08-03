@@ -1,5 +1,6 @@
 package io.ola.crud.model;
 
+import io.ola.crud.inject.Injector;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,6 @@ public class InjectFieldMeta {
     private Class<?> entityClass;
     private Field field;
     private Annotation annotation;
-    private Class<?> injectorClass;
+    private Class<? extends Injector> injectorClass;
     private Boolean force;
 }

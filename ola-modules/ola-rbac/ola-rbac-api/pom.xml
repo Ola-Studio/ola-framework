@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ola</groupId>
-        <artifactId>ola-framework</artifactId>
+        <artifactId>ola-rbac</artifactId>
         <version>${revision}</version>
-        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ola-user-api</artifactId>
+    <artifactId>ola-rbac-api</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

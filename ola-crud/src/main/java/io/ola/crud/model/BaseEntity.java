@@ -7,6 +7,7 @@ import io.ola.crud.inject.UserIdInjector;
 import io.ola.crud.inject.impl.NowInjector;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -14,9 +15,9 @@ import java.util.Date;
  * @date 2023/7/25
  */
 @Data
-public class BaseEntity<KEY> {
+public class BaseEntity<ID extends Serializable> {
     @Id
-    private KEY id;
+    private ID id;
     @BeforeSave(UserIdInjector.class)
     private String creator;
     @BeforeUpdate(UserIdInjector.class)

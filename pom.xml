@@ -13,8 +13,6 @@
         <module>ola-common</module>
         <module>ola-server</module>
         <module>ola-modules</module>
-        <module>ola-modules/ola-user</module>
-        <module>ola-modules/ola-user/ola-user-api</module>
     </modules>
 
     <properties>

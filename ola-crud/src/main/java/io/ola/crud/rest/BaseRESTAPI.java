@@ -1,15 +1,19 @@
 package io.ola.crud.rest;
 
+import cn.hutool.core.lang.Assert;
+import cn.hutool.extra.validation.BeanValidationResult;
+import cn.hutool.extra.validation.ValidationUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.service.IService;
 import io.ola.common.http.R;
 import io.ola.common.utils.SpringUtils;
 import io.ola.common.utils.WebUtils;
 import io.ola.crud.CRUD;
+import io.ola.crud.groups.Save;
 import io.ola.crud.query.QueryHelper;
 import io.ola.crud.service.CRUDService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.groups.Default;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,18 +48,28 @@ public interface BaseRESTAPI<ENTITY> {
 
     @PostMapping
     default R<ENTITY> post(@RequestBody ENTITY entity) {
-        return R.ok(getService().save(entity));
+        return R.ok(doValidateAndSave(entity));
     }
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     default R<ENTITY> form(ENTITY entity) {
-        return R.ok(getService().save(entity));
+        return R.ok(doValidateAndSave(entity));
     }
 
     @DeleteMapping("/{id}")
     default R<Void> delete(@PathVariable Serializable id) {
         getService().delete(id);
         return R.ok();
+    }
+
+    default ENTITY doValidateAndSave(ENTITY entity) {
+        CRUDService<ENTITY> service = getService();
+        Class<?>[] validateGroups = service.isNew(entity)
+                ? new Class<?>[]{Default.class, Save.class}
+                : new Class<?>[]{Default.class, Module.class};
+        BeanValidationResult beanValidationResult = ValidationUtil.warpValidate(entity, validateGroups);
+        Assert.isTrue(beanValidationResult.isSuccess());
+        return service.save(entity);
     }
 
     /**

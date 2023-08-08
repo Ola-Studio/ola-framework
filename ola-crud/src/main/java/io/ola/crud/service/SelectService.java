@@ -12,6 +12,8 @@ import java.util.List;
  */
 public interface SelectService<ENTITY> {
 
+    <ID extends Serializable> ID getId(ENTITY entity);
+
     ENTITY get(Serializable id);
 
     ENTITY get(QueryWrapper queryWrapper);

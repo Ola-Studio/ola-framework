@@ -13,6 +13,7 @@
         <module>ola-common</module>
         <module>ola-server</module>
         <module>ola-modules</module>
+        <module>ola-security</module>
     </modules>
 
     <properties>

@@ -1,5 +1,6 @@
 package io.ola.crud.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.BaseMapper;
@@ -37,6 +38,16 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
     public int DEFAULT_BATCH_SIZE = 1000;
     @Autowired
     protected DAO dao;
+
+    @Override
+    public <ID extends Serializable> ID getId(ENTITY entity) {
+        EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
+        try {
+            return (ID) CollUtil.getFirst(entityMeta.getIdFields()).get(entity);
+        } catch (IllegalAccessException illegalAccessException) {
+            throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
+        }
+    }
 
     @Override
     public void delete(Serializable id) {

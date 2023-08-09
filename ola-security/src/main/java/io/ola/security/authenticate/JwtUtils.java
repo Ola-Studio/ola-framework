@@ -1,0 +1,86 @@
+package io.ola.security.authenticate;
+
+import cn.hutool.core.date.DateUtil;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import io.ola.common.utils.SpringUtils;
+import io.ola.security.model.Token;
+import io.ola.security.properties.JwtProperties;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
+
+import java.security.Key;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * @author yiuman
+ * @date 2023/8/9
+ */
+@Slf4j
+public class JwtUtils {
+    public static final JwtProperties JWT_PROPERTIES = SpringUtils.getBean(JwtProperties.class);
+
+    private JwtUtils() {
+    }
+
+    public static Token generateToken(String principal, Map<String, Object> claims) {
+        long expires = JWT_PROPERTIES.getExpiresInSeconds() * 1000;
+        String token = Jwts.builder()
+                .setSubject(principal)
+                .setClaims(claims)
+                .signWith(signKey(), JWT_PROPERTIES.getAlgorithm())
+                .setExpiration(DateUtil.date(System.currentTimeMillis() + expires))
+                .compact();
+        return Token.builder()
+                .token(token)
+                .expires(expires)
+                .build();
+    }
+
+    public static boolean validateToken(String token) {
+        try {
+            getClaims(token);
+            return true;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT signature.");
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT token.");
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT token.");
+        } catch (IllegalArgumentException e) {
+            log.info("JWT token compact of handler are invalid.");
+        }
+        return false;
+    }
+
+    public static Claims getClaims(String token) {
+        return parse(token).getBody();
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static  Jwt<Header, Claims> parse(String token) {
+        JwtParser jwtParser = Jwts.parserBuilder()
+                .setSigningKey(signKey())
+                .build();
+       return jwtParser.parseClaimsJwt(token);
+    }
+
+    public static Key signKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(JWT_PROPERTIES.getSecret()));
+    }
+
+    public static String resolveToken(HttpServletRequest request) {
+        //获取token，若请求头中没有则从请求参数中取
+        String bearerToken = Optional
+                .ofNullable(request.getHeader(JWT_PROPERTIES.getTokenHeader()))
+                .orElse(request.getParameter(JWT_PROPERTIES.getTokenParamName()));
+        String tokenPrefix = JWT_PROPERTIES.getTokenPrefix();
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(tokenPrefix)) {
+            return bearerToken.substring(tokenPrefix.length());
+        }
+        return null;
+    }
+}

@@ -1,6 +1,10 @@
 package io.ola.security.authenticate;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
 import io.ola.security.model.Token;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
 
@@ -9,8 +13,21 @@ import java.util.Map;
  * @date 2023/8/8
  */
 public interface TokenService {
-    Token create(Object principal, Map<String, Object> claims);
+    default Token create(Object principal, Map<String, Object> claims) {
+        return JwtUtils.generateToken(principal.toString(), claims);
+    }
 
-    boolean validate(String token);
+    default boolean validate(String token) {
+        return JwtUtils.validateToken(token);
+    }
+
+    default String getToken(HttpServletRequest request) {
+        return JwtUtils.resolveToken(request);
+    }
+
+    @SuppressWarnings("rawtypes")
+    default Jwt<Header, Claims> parse(String token) {
+        return JwtUtils.parse(token);
+    }
 
 }

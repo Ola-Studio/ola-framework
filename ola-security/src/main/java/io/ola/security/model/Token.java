@@ -1,5 +1,6 @@
 package io.ola.security.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -7,6 +8,7 @@ import lombok.Data;
  * @date 2023/8/8
  */
 @Data
+@Builder
 public class Token {
    private String token;
    private String refreshToken;

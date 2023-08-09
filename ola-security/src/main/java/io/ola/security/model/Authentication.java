@@ -27,7 +27,13 @@ public interface Authentication {
      */
     Object getCredentials();
 
+    String getGrantType();
+
+    void setGrantType(String grantType);
+
     boolean isAuthenticated();
+
+    void setAuthenticated(boolean authenticated);
 
     @Data
     @NoArgsConstructor
@@ -36,15 +42,18 @@ public interface Authentication {
         private Object principal;
         private Object details;
         private Object credentials;
+        private String grantType;
         private boolean authenticated = false;
 
         public Default(Object principal, Object credentials) {
             this.principal = principal;
             this.credentials = credentials;
+            this.authenticated = true;
         }
 
         public Default(Object principal) {
             this.principal = principal;
+            this.authenticated = true;
         }
     }
 

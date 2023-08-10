@@ -25,7 +25,7 @@ public class AuthenticateUtils {
     private AuthenticateUtils() {
     }
 
-    public static <VM>Authentication authentication(HttpServletRequest request) {
+    public static <VM> Authentication authentication(HttpServletRequest request) {
         String grantType = Optional.ofNullable(WebUtils.getParameter(request, SecurityConstants.GRANT_TYPE))
                 .orElse(WebUtils.getRequestHeader(SecurityConstants.GRANT_TYPE));
         AuthenticateService<VM> authenticateService = getAuthenticateService(grantType);
@@ -37,7 +37,7 @@ public class AuthenticateUtils {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static <VM>AuthenticateService<VM> getAuthenticateService(String grantType) {
+    public static <VM> AuthenticateService<VM> getAuthenticateService(String grantType) {
         Map<String, AuthenticateService> authenticateServiceMap = SpringUtils.getBeansOfType(AuthenticateService.class);
         AuthenticateService<VM> authenticateService = authenticateServiceMap.get(grantType);
         if (Objects.isNull(authenticateService)) {
@@ -47,10 +47,6 @@ public class AuthenticateUtils {
                     .orElseThrow(() -> new AuthenticationException(String.format("The grantType '%s' is not supported", grantType)));
         }
         return authenticateService;
-    }
-
-    public static Authentication getAuthentication() {
-        return AUTHENTICATION_THREAD_LOCAL.get();
     }
 
     @SuppressWarnings("rawtypes")
@@ -68,6 +64,10 @@ public class AuthenticateUtils {
         authentication.setGrantType(grantType);
         setAuthentication(authentication);
         return authentication;
+    }
+
+    public static Authentication getAuthentication() {
+        return AUTHENTICATION_THREAD_LOCAL.get();
     }
 
     public static void setAuthentication(Authentication authentication) {

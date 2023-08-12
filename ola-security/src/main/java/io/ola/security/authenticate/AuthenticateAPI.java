@@ -17,14 +17,14 @@ import java.util.Map;
 @SuppressWarnings("MVCPathVariableInspection")
 public interface AuthenticateAPI {
 
-    @RequestMapping("#{ola.security.authenticateEndpoint}")
+    @RequestMapping("#{securityProperties.authenticateEndpoint}")
     default R<Token> authenticate(HttpServletRequest request) {
         Authentication authentication = AuthenticateUtils.authentication(request);
         TokenService tokenService = SpringUtils.getBean(TokenService.class);
         return R.ok(tokenService.create(authentication.getPrincipal(), Map.of(SecurityConstants.GRANT_TYPE, authentication.getGrantType())));
     }
 
-    @RequestMapping("#{ola.security.logoutEndpoint}")
+    @RequestMapping("#{securityProperties.logoutEndpoint}")
     default R<Void> logout(HttpServletRequest request) {
         return R.ok();
     }

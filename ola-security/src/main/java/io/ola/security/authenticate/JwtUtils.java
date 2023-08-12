@@ -5,6 +5,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.ola.common.utils.SpringUtils;
+import io.ola.security.constants.SecurityConstants;
 import io.ola.security.model.Token;
 import io.ola.security.properties.JwtProperties;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,18 +28,35 @@ public class JwtUtils {
     private JwtUtils() {
     }
 
-    public static Token generateToken(String principal, Map<String, Object> claims) {
+    public static Token generateToken(String principal, Map<String, Object> claims, boolean buildRefreshToken) {
         long expires = JWT_PROPERTIES.getExpiresInSeconds() * 1000;
+        claims.put(JWT_PROPERTIES.getIdentityKey(), principal);
         String token = Jwts.builder()
                 .setSubject(principal)
                 .setClaims(claims)
                 .signWith(signKey(), JWT_PROPERTIES.getAlgorithm())
                 .setExpiration(DateUtil.date(System.currentTimeMillis() + expires))
                 .compact();
+        String refreshToken = null;
+        if (buildRefreshToken) {
+            Map<String, Object> refreshTokenClaims = new HashMap<>(claims);
+            refreshTokenClaims.put(SecurityConstants.GRANT_TYPE, "refreshToken");
+            refreshToken = Jwts.builder()
+                    .setSubject(principal)
+                    .setClaims(refreshTokenClaims)
+                    .signWith(signKey(), JWT_PROPERTIES.getAlgorithm())
+                    .setExpiration(DateUtil.date(System.currentTimeMillis() + JWT_PROPERTIES.getRefreshToKenExpiresInSeconds() * 1000))
+                    .compact();
+        }
         return Token.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .expires(expires)
                 .build();
+    }
+
+    public static Token generateToken(String principal, Map<String, Object> claims) {
+        return generateToken(principal, claims, true);
     }
 
     public static boolean validateToken(String token) {
@@ -61,11 +80,11 @@ public class JwtUtils {
     }
 
     @SuppressWarnings("rawtypes")
-    public static  Jwt<Header, Claims> parse(String token) {
+    public static Jwt<Header, Claims> parse(String token) {
         JwtParser jwtParser = Jwts.parserBuilder()
                 .setSigningKey(signKey())
                 .build();
-       return jwtParser.parseClaimsJwt(token);
+        return jwtParser.parseClaimsJwt(token);
     }
 
     public static Key signKey() {

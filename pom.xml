@@ -8,12 +8,15 @@
     <artifactId>ola-framework</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>ola-crud</module>
         <module>ola-common</module>
         <module>ola-server</module>
         <module>ola-modules</module>
         <module>ola-security</module>
+        <module>ola-starter</module>
+        <module>ola-starter/ola-security-starter</module>
     </modules>
 
     <properties>
@@ -86,6 +89,11 @@
                             <groupId>com.mybatis-flex</groupId>
                             <artifactId>mybatis-flex-processor</artifactId>
                             <version>${mybatis-flex.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${spring-boot.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

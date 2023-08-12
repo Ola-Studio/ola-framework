@@ -12,9 +12,9 @@ public interface AuthenticateService<VM> {
 
     Authentication authenticate(VM authenticationVM);
 
-    default Authentication resolve(String token){
-        return AuthenticateUtils.getAuthentication();
-    };
+    default Authentication resolve(HttpServletRequest request) {
+        return AuthenticateUtils.resolve(request);
+    }
 
     void logout(Authentication authentication);
 

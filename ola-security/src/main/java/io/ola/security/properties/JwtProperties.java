@@ -4,14 +4,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.ola.security.constants.JwtConstants;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * @author yiuman
  * @date 2023/8/9
  */
-@SuppressWarnings("ConfigurationProperties")
 @ConfigurationProperties(prefix = "ola.security.jwt")
 @Data
+@Component
 public class JwtProperties {
 
     private SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
@@ -46,6 +47,10 @@ public class JwtProperties {
      * 过期时间
      */
     private long expiresInSeconds = JwtConstants.EXPIRES_IN_SECOND;
+    /**
+     * 刷新token的过期时间
+     */
+    private long refreshToKenExpiresInSeconds = JwtConstants.REFRESH_TOKEN_EXPIRES_IN_SECOND;
 
     /**
      * 记住我的时间

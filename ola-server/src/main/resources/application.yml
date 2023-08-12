@@ -5,6 +5,7 @@ server:
       force: true
       enabled: true
     context-path: /api
+  port: 8094
 spring:
   application:
     name: ola-server
@@ -17,5 +18,6 @@ spring:
     url: ${DATASOURCE_URL:jdbc:p6spy:mysql://127.0.0.1:3306/ola?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false}
     username: root
     password:
-
-
+ola:
+  security:
+    authenticate-endpoint: /login

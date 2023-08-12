@@ -76,7 +76,7 @@ public class AuthorizeAdvice {
             AuthorizeHandler authorizeHandler = SpringUtils.getBean(handlerClass, true);
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             Assert.isTrue(
-                    authorizeHandler.hasPermission(AuthenticateUtils.authentication(request), request),
+                    authorizeHandler.hasPermission(AuthenticateUtils.resolve(request), request),
                     NoPermissionException::new
             );
         }

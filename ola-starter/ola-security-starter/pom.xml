@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ola</groupId>
-        <artifactId>ola-framework</artifactId>
+        <artifactId>ola-starter</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>ola-server</artifactId>
+    <artifactId>ola-security-starter</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,15 +19,22 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>io.ola</groupId>
+            <artifactId>ola-security</artifactId>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>io.ola</groupId>
-            <artifactId>ola-security-starter</artifactId>
-            <version>${revision}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

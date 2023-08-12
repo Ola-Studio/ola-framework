@@ -30,14 +30,12 @@ public class AuthorizeHandlerInterceptor implements HandlerInterceptor {
     @SuppressWarnings("NullableProblems")
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        boolean isExclude = Arrays.stream(securityProperties.getExcludedUris())
-                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, request.getRequestURI()));
-        if (isExclude) {
+        if (Arrays.stream(securityProperties.getExcludedUris())
+                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, request.getRequestURI()))) {
             return true;
         }
         Authentication authentication = AuthenticateUtils.resolve(request);
-        boolean allHasPermission = requestAuthorizeHandlers.stream().allMatch(requestAuthorizeHandler -> requestAuthorizeHandler.hasPermission(authentication, request));
-        Assert.isTrue(allHasPermission, NoPermissionException::new);
+        Assert.isTrue(requestAuthorizeHandlers.stream().allMatch(requestAuthorizeHandler -> requestAuthorizeHandler.hasPermission(authentication, request)), NoPermissionException::new);
         return true;
     }
 }

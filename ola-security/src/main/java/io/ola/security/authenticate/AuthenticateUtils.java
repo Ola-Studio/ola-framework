@@ -1,6 +1,9 @@
 package io.ola.security.authenticate;
 
+import cn.hutool.core.exceptions.ValidateException;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.thread.threadlocal.NamedThreadLocal;
+import cn.hutool.core.util.StrUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwt;
@@ -28,6 +31,7 @@ public class AuthenticateUtils {
     public static <VM> Authentication authentication(HttpServletRequest request) {
         String grantType = Optional.ofNullable(WebUtils.getParameter(request, SecurityConstants.GRANT_TYPE))
                 .orElse(WebUtils.getRequestHeader(SecurityConstants.GRANT_TYPE));
+        Assert.notBlank(grantType, () -> new ValidateException("The grantType parameter cannot be empty"));
         AuthenticateService<VM> authenticateService = getAuthenticateService(grantType);
         VM authenticateVM = WebUtils.requestDataBind(authenticateService.getModelClass(), request);
         Authentication authenticate = authenticateService.authenticate(authenticateVM);
@@ -53,6 +57,9 @@ public class AuthenticateUtils {
     public static Authentication resolve(HttpServletRequest request) {
         TokenService tokenService = SpringUtils.getBean(TokenService.class);
         String token = tokenService.getToken(request);
+        if (StrUtil.isBlank(token)) {
+            return Authentication.ANONYMOUS;
+        }
         Jwt<Header, Claims> jwt = tokenService.parse(token);
         Claims claims = jwt.getBody();
         String grantType = (String) claims.get(SecurityConstants.GRANT_TYPE);

@@ -6,10 +6,11 @@ package io.ola.security.exception;
  */
 
 public class NoPermissionException extends RuntimeException {
+    public static final Integer STATUS_CODE = 403;
 
     public NoPermissionException() {
-           super("No Permission");
-       }
+        super("No Permission");
+    }
 
     public NoPermissionException(String message) {
         super(message);

@@ -6,6 +6,7 @@ package io.ola.security.exception;
  */
 
 public class AuthenticationException extends RuntimeException {
+    public static final Integer STATUS_CODE = 401;
 
     public AuthenticationException(String message) {
         super(message);

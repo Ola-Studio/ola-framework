@@ -17,6 +17,7 @@
         <module>ola-security</module>
         <module>ola-starter</module>
         <module>ola-starter/ola-security-starter</module>
+        <module>ola-modules/ola-rbac/ola-rbac-impl</module>
     </modules>
 
     <properties>
@@ -36,7 +37,11 @@
         <mybatis-flex.version>1.5.4</mybatis-flex.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
-        <jjwt.version>0.11.5</jjwt.version>
+        <jjwt.version>0.11.0</jjwt.version>
+        <p6spy.version>3.9.0</p6spy.version>
+        <druid.version>1.2.3</druid.version>
+        <mybatis-spring.version>3.0.2</mybatis-spring.version>
+        <mysql.version>8.0.28</mysql.version>
     </properties>
 
     <dependencies>
@@ -52,7 +57,6 @@
             <version>${hutool.version}</version>
         </dependency>
     </dependencies>
-
 
     <dependencyManagement>
         <dependencies>

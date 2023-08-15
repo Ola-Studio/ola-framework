@@ -10,10 +10,11 @@ import io.ola.security.authorize.AuthorizeHandlerInterceptor;
 import io.ola.security.authorize.RequestAuthorizeHandler;
 import io.ola.security.properties.SecurityProperties;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.lang.annotation.Before;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ import java.util.List;
 @ComponentScan(OLA.BASE_PACKAGE)
 @EnableConfigurationProperties(SecurityProperties.class)
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
+@AutoConfigureAfter(DataSourceAutoConfiguration.class)
 public class OlaSecurityAutoConfiguration {
     private static final String ALL = "*";
     private static final String ALL_URIS = "/**";

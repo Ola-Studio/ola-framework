@@ -1,9 +1,12 @@
 package io.ola.security.properties;
 
+import cn.hutool.core.collection.CollUtil;
 import io.ola.security.constants.SecurityConstants;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author yiuman
@@ -34,5 +37,6 @@ public class SecurityProperties {
     /**
      * 需排除的url
      */
-    private String[] excludedUris = new String[]{};
+    private List<String> excludedUris = CollUtil.newArrayList();
+
 }

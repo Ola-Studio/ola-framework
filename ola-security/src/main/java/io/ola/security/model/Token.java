@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 @Builder
 public class Token {
-   private String token;
-   private String refreshToken;
-   private Long expires;
+    private String token;
+    private String refreshToken;
+    private Long expires;
 }

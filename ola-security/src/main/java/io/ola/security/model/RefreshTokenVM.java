@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefreshTokenVM {
-    public static final String GRANT_TYPE ="refreshToken";
+    public static final String GRANT_TYPE = "refreshToken";
     private String refreshToken;
 }

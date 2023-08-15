@@ -13,6 +13,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @Table("sys_role")
 public class Role extends BaseEntity<String> {
-   private String roleName;
-   private String remark;
+    private String roleName;
+    private String remark;
 }

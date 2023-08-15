@@ -5,9 +5,10 @@ import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import com.mybatisflex.core.service.IService;
+import com.mybatisflex.core.BaseMapper;
 import com.mybatisflex.core.table.TableInfo;
 import com.mybatisflex.core.table.TableInfoFactory;
+import io.ola.common.utils.SpringUtils;
 import io.ola.crud.annotation.BeforeSave;
 import io.ola.crud.annotation.BeforeUpdate;
 import io.ola.crud.annotation.DeleteTag;
@@ -19,12 +20,12 @@ import io.ola.crud.model.InjectFieldMeta;
 import io.ola.crud.query.annotation.Query;
 import io.ola.crud.rest.BaseRESTAPI;
 import io.ola.crud.service.CRUDService;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.core.ResolvableType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +40,9 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unchecked")
 public final class CRUD {
 
-    private final static Map<Class<? extends BaseRESTAPI<?>>, CRUDMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
-    private final static Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends BaseRESTAPI<?>>, CRUDMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, BaseMapper<?>> ENTITY_CLASS_MAPPER_MAP = new ConcurrentHashMap<>();
 
     public static <ENTITY> CRUDMeta<ENTITY> getCRUDMeta(Class<? extends BaseRESTAPI<ENTITY>> apiClass) {
         CRUDMeta<ENTITY> crudMeta = (CRUDMeta<ENTITY>) CRUD_META_MAP.get(apiClass);
@@ -55,13 +57,33 @@ public final class CRUD {
         return getCRUDMeta(crudClass).getService();
     }
 
+    public static <ENTITY, M extends BaseMapper<ENTITY>> M getMapper(Class<ENTITY> entityClass) {
+        BaseMapper<?> baseMapper = ENTITY_CLASS_MAPPER_MAP.get(entityClass);
+        if (Objects.nonNull(baseMapper)) {
+            return (M) baseMapper;
+        }
+        SqlSessionTemplate sqlSessionTemplate = SpringUtils.getBean(SqlSessionTemplate.class);
+        Collection<Class<?>> mappers = sqlSessionTemplate.getConfiguration().getMapperRegistry().getMappers();
+        Class<?> matchMapperClass = mappers.stream().filter(mapperClass -> {
+                    return Objects.equals(TypeUtil.getTypeArgument(mapperClass, 0), entityClass);
+                })
+                .findFirst()
+                .orElseThrow(
+                        () -> new RuntimeException(String.format("can not found mapper for entity %s", entityClass))
+                );
+
+        baseMapper = (BaseMapper<ENTITY>) sqlSessionTemplate.getMapper(matchMapperClass);
+        ENTITY_CLASS_MAPPER_MAP.put(entityClass, baseMapper);
+        return (M) baseMapper;
+    }
+
     public static <ENTITY> Class<?> getQueryClass(Class<? extends BaseRESTAPI<ENTITY>> crudClass) {
         return getCRUDMeta(crudClass).getQueryClass();
     }
 
     private static <ENTITY> CRUDMeta<ENTITY> initCRUDMeta(Class<? extends BaseRESTAPI<ENTITY>> crudClass) {
         synchronized (crudClass) {
-            TypeReference<IService<?>> reference = new TypeReference<>() {
+            TypeReference<CRUDService<ENTITY>> reference = new TypeReference<>() {
             };
             Type typeArgument = TypeUtil.getTypeArgument(crudClass, 0);
             final ParameterizedType parameterizedType = (ParameterizedType) reference.getType();
@@ -71,7 +93,7 @@ public final class CRUD {
             final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
             CRUDService<ENTITY> iService = SpringUtil.getBean(beanNames[0], rawType);
             Query query = AnnotationUtil.getAnnotation(crudClass, Query.class);
-            Class<?> queryClass = Objects.isNull(query) ? null : query.getClass();
+            Class<?> queryClass = Objects.isNull(query) ? null : query.value();
             EntityMeta<ENTITY> entityEntityMeta = getEntityMeta((Class<ENTITY>) typeArgument);
             return new CRUDMeta<>(crudClass, entityClass, iService, entityEntityMeta, queryClass);
         }
@@ -139,7 +161,7 @@ public final class CRUD {
             injectFieldMeta.setEntityClass(entityClass);
             injectFieldMeta.setField(field);
             injectFieldMeta.setAnnotation(annotation);
-            Map<String, ?> memberValues = (Map<String, ?>) ReflectUtil.getFieldValue(Proxy.getInvocationHandler(annotation), "memberValues");
+            Map<String, ?> memberValues = AnnotationUtil.getAnnotationValueMap(field, annotationClass);
             injectFieldMeta.setInjectorClass((Class<? extends Injector>) memberValues.get("value"));
             injectFieldMeta.setForce((Boolean) memberValues.get("force"));
             return injectFieldMeta;

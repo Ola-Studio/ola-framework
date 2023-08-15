@@ -16,7 +16,6 @@ import io.ola.crud.CRUD;
 import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.model.EntityMeta;
 import io.ola.crud.service.CRUDService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -28,16 +27,19 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2023/8/2
  */
-@SuppressWarnings({"SpringJavaInjectionPointsAutowiringInspection", "unchecked"})
-public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> implements CRUDService<ENTITY> {
+@SuppressWarnings({"unchecked"})
+public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
 
-    private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 1);
-    public int DEFAULT_BATCH_SIZE = 1000;
-    @Autowired
-    protected DAO dao;
+    private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 0);
+    private static final int DEFAULT_BATCH_SIZE = 1000;
+
+    protected <DAO extends BaseMapper<ENTITY>> DAO getDao() {
+        return CRUD.getMapper(entityClass);
+    }
 
     @Override
     public <ID extends Serializable> ID getId(ENTITY entity) {
@@ -51,7 +53,7 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
 
     @Override
     public void delete(Serializable id) {
-        dao.deleteById(id);
+        getDao().deleteById(id);
     }
 
     @Override
@@ -73,25 +75,25 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
-        dao.deleteBatchByIds(idSet);
+        getDao().deleteBatchByIds(idSet);
     }
 
     @Override
     public void deleteByQuery(QueryWrapper queryWrapper) {
-        dao.deleteByQuery(queryWrapper);
+        getDao().deleteByQuery(queryWrapper);
     }
 
     @Override
     public <T extends ENTITY> T save(T entity) {
         beforeSave(entity);
-        dao.insert(entity);
+        getDao().insertOrUpdate(entity);
         afterSave(entity);
         return entity;
     }
 
-    @SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored"})
+    @SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored", "SameParameterValue"})
     <T extends ENTITY> void saveBatch(Collection<T> entities, int batchSize) {
-        Class<BaseMapper<ENTITY>> usefulClass = (Class<BaseMapper<ENTITY>>) ClassUtil.getUsefulClass(dao.getClass());
+        Class<BaseMapper<ENTITY>> usefulClass = (Class<BaseMapper<ENTITY>>) ClassUtil.getUsefulClass(getDao().getClass());
         SqlUtil.toBool(Db.executeBatch(entities, batchSize, usefulClass, BaseMapper::insert));
     }
 
@@ -113,12 +115,12 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
 
     @Override
     public ENTITY get(Serializable id) {
-        return dao.selectOneById(id);
+        return getDao().selectOneById(id);
     }
 
     @Override
     public ENTITY get(QueryWrapper queryWrapper) {
-        return dao.selectOneByQuery(queryWrapper);
+        return getDao().selectOneByQuery(queryWrapper);
     }
 
     @Override
@@ -131,16 +133,16 @@ public abstract class BaseCRUDService<DAO extends BaseMapper<ENTITY>, ENTITY> im
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
-        return dao.selectListByIds(idSet);
+        return getDao().selectListByIds(idSet);
     }
 
     @Override
     public List<ENTITY> list(QueryWrapper queryWrapper) {
-        return dao.selectListByQueryAs(queryWrapper, entityClass);
+        return getDao().selectListByQueryAs(queryWrapper, entityClass);
     }
 
     @Override
     public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
-        return dao.paginate(page, queryWrapper);
+        return getDao().paginate(page, queryWrapper);
     }
 }

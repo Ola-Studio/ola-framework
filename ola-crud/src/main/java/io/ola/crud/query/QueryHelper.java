@@ -25,9 +25,8 @@ import java.util.function.Consumer;
  */
 public final class QueryHelper {
 
-    private final static Map<Class<?>, List<QueryFieldMeta>> CLASS_QUERY_FIELD_META_MAP = new ConcurrentHashMap<>();
-
-    private final static ConditionHandler DEFAULT_CONDITION_HANDLER = DefaultConditionHandler.INSTANCE;
+    private static final Map<Class<?>, List<QueryFieldMeta>> CLASS_QUERY_FIELD_META_MAP = new ConcurrentHashMap<>();
+    private static final ConditionHandler DEFAULT_CONDITION_HANDLER = DefaultConditionHandler.INSTANCE;
 
     private QueryHelper() {
     }

@@ -15,9 +15,14 @@ spring:
       max-request-size: ${MAX_REQUEST_SIZE:200MB}
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    url: ${DATASOURCE_URL:jdbc:p6spy:mysql://127.0.0.1:3306/ola?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false}
+    url: ${DATASOURCE_URL:jdbc:p6spy:mysql://localhost:3306/ola?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false}
     username: root
-    password:
+    password: 123456
 ola:
   security:
     authenticate-endpoint: /login
+mybatis-flex:
+  global-config:
+    key-config:
+      key-type: generator
+      value: uuid

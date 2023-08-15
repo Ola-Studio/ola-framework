@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.ola</groupId>
         <artifactId>ola-framework</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>ola-security</artifactId>
@@ -48,7 +48,6 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>${jjwt.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>io.ola</groupId>

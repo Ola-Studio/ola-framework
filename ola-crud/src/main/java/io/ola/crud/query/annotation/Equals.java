@@ -4,7 +4,8 @@ import io.ola.crud.enums.Clauses;
 import io.ola.crud.query.ConditionHandler;
 import org.springframework.core.annotation.AliasFor;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author yiuman

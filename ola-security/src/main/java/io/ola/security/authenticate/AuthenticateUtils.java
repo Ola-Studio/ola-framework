@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author yiuman
  * @date 2023/8/9
  */
-public class AuthenticateUtils {
+public final class AuthenticateUtils {
     private static final ThreadLocal<Authentication> AUTHENTICATION_THREAD_LOCAL = new NamedThreadLocal<>("SECURITY");
 
     private AuthenticateUtils() {

@@ -23,7 +23,6 @@ import java.util.Objects;
 public class SensitiveJsonSerializer extends JsonSerializer<String> implements ContextualSerializer {
 
     private Class<? extends SensitiveHandler> handleClass;
-
     private SensitiveStrategy sensitiveStrategy;
 
     @Override

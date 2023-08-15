@@ -24,6 +24,7 @@ import java.util.Objects;
 /**
  * CRUD基本接口
  *
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2023/7/25
  */

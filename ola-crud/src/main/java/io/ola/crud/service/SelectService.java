@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2023/8/2
  */

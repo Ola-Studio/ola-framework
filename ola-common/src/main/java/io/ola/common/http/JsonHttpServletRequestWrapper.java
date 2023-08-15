@@ -29,7 +29,7 @@ public class JsonHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     private byte[] bytes;
     private Object parsedObject;
-    private ParameterMap<String, String[]> parameterMap;
+    private final ParameterMap<String, String[]> parameterMap = new ParameterMap<>();
 
     public JsonHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
@@ -58,13 +58,11 @@ public class JsonHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        parameterMap = Optional.ofNullable(parameterMap).orElse(new ParameterMap<>());
         parameterMap.putAll(super.getParameterMap());
-        Map<String, String[]> parameterMap = super.getParameterMap();
         if (parsedObject instanceof JSONObject) {
-            ((JSONObject) parsedObject).forEach((key, vaule) -> {
-                parameterMap.put(key, new String[]{vaule.toString()});
-            });
+            ((JSONObject) parsedObject).forEach(
+                    (key, value) -> parameterMap.put(key, new String[]{value.toString()})
+            );
         }
         return parameterMap;
     }

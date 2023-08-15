@@ -22,7 +22,7 @@ import java.util.Optional;
  * @date 2023/8/9
  */
 @Slf4j
-public class JwtUtils {
+public final class JwtUtils {
     public static final JwtProperties JWT_PROPERTIES = SpringUtils.getBean(JwtProperties.class);
 
     private JwtUtils() {

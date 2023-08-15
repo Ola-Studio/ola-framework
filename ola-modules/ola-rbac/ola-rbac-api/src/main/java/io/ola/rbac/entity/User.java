@@ -17,5 +17,5 @@ public class User extends BaseEntity<String> {
     private String password;
     private String mobile;
     private String avatar;
-    private Integer status;
+    private Integer status = 1;
 }

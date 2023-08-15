@@ -5,6 +5,7 @@ import io.ola.security.model.Authentication;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
+ * @param <VM> 认证请求视图模型
  * @author yiuman
  * @date 2023/8/8
  */
@@ -16,7 +17,8 @@ public interface AuthenticateService<VM> {
         return AuthenticateUtils.resolve(request);
     }
 
-    void logout(Authentication authentication);
+    default void logout(Authentication authentication) {
+    }
 
     String grantType();
 

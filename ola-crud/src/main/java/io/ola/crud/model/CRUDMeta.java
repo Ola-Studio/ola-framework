@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * CRUD元信息
- *
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2023/8/2
  */

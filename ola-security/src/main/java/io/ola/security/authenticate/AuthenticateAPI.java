@@ -26,6 +26,9 @@ public interface AuthenticateAPI {
 
     @RequestMapping("#{securityProperties.logoutEndpoint}")
     default R<Void> logout(HttpServletRequest request) {
+        Authentication authentication = AuthenticateUtils.resolve(request);
+        AuthenticateService<?> authenticateService = AuthenticateUtils.getAuthenticateService(authentication.getGrantType());
+        authenticateService.logout(authentication);
         return R.ok();
     }
 }

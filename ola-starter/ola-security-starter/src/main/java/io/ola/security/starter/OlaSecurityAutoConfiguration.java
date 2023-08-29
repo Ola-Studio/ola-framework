@@ -12,7 +12,6 @@ import io.ola.security.properties.SecurityProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
@@ -62,7 +61,7 @@ public class OlaSecurityAutoConfiguration {
     }
 
     @Configuration
-    @ConditionalOnBean(AuthorizeHandlerInterceptor.class)
+    @ConditionalOnMissingBean(AuthorizeHandlerInterceptor.class)
     @RequiredArgsConstructor
     public static class WebMvcConfiguration implements WebMvcConfigurer {
 

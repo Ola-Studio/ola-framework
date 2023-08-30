@@ -34,7 +34,7 @@
         <typesafe-config.version>1.4.2</typesafe-config.version>
         <fastjson2.version>2.0.12</fastjson2.version>
         <text-ui.version>0.0.3</text-ui.version>
-        <mybatis-flex.version>1.5.4</mybatis-flex.version>
+        <mybatis-flex.version>1.6.1</mybatis-flex.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jjwt.version>0.11.0</jjwt.version>

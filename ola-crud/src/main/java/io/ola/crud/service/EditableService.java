@@ -40,7 +40,7 @@ public interface EditableService<ENTITY> {
             return true;
         }
 
-        return idFields.stream().allMatch(field -> Objects.nonNull(ReflectUtil.getFieldValue(entity, field)));
+        return idFields.stream().allMatch(field -> Objects.isNull(ReflectUtil.getFieldValue(entity, field)));
     }
 
 }

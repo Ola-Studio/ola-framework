@@ -1,7 +1,8 @@
 package io.ola.rbac.entity;
 
+import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
-import io.ola.crud.model.BaseEntity;
+import io.ola.crud.model.BaseAudit;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,7 +15,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Table("sys_resource_owner")
-public class ResourceOwner extends BaseEntity<String> {
+public class ResourceOwner extends BaseAudit {
+    @Id
+    private String id;
     /**
      * 拥有者ID
      */

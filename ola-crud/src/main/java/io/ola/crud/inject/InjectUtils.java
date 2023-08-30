@@ -36,7 +36,7 @@ public final class InjectUtils {
 
     public static void doInject(Object object, List<InjectFieldMeta> injectMetas) {
         for (InjectFieldMeta beforeUpdateInjectMeta : injectMetas) {
-            Injector injector = (Injector) SpringUtils.getBean(beforeUpdateInjectMeta.getInjectorClass(), true);
+            Injector injector = SpringUtils.getBean(beforeUpdateInjectMeta.getInjectorClass(), true);
             Object injectValue = injector.getInjectValue(beforeUpdateInjectMeta.getField());
             if (Objects.nonNull(injectValue) || beforeUpdateInjectMeta.getForce()) {
                 ReflectUtil.setFieldValue(object, beforeUpdateInjectMeta.getField(), injectValue);

@@ -15,4 +15,14 @@ import lombok.EqualsAndHashCode;
 public class Organ extends BaseTreeEntity<Organ, String> {
     private String organName;
     private String remark;
+
+    @Override
+    public void setId(String s) {
+        super.setId(s);
+    }
+
+    @Override
+    public void setParentId(String parentId) {
+        super.setParentId(parentId);
+    }
 }

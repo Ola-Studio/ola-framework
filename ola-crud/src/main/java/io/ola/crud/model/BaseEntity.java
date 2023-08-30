@@ -4,8 +4,6 @@ import com.mybatisflex.annotation.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-
 /**
  * @param <ID> ID类型
  * @author yiuman
@@ -13,7 +11,7 @@ import java.io.Serializable;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseEntity<ID extends Serializable> extends BaseAudit {
+public class BaseEntity<ID> extends BaseAudit {
     @Id
     private ID id;
 

@@ -8,7 +8,7 @@ import io.ola.security.model.Token;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author yiuman
@@ -21,7 +21,9 @@ public interface AuthenticateAPI {
     default R<Token> authenticate(HttpServletRequest request) {
         Authentication authentication = AuthenticateUtils.authentication(request);
         TokenService tokenService = SpringUtils.getBean(TokenService.class);
-        return R.ok(tokenService.create(authentication.getPrincipal(), Map.of(SecurityConstants.GRANT_TYPE, authentication.getGrantType())));
+        return R.ok(tokenService.create(authentication.getPrincipal(), new HashMap<>() {{
+            put(SecurityConstants.GRANT_TYPE, authentication.getGrantType());
+        }}));
     }
 
     @RequestMapping("#{securityProperties.logoutEndpoint}")

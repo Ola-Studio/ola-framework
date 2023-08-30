@@ -20,6 +20,7 @@ public class BaseAudit {
     private String lastModifier;
     @BeforeSave(NowInjector.class)
     private Date createTime;
+    @BeforeSave(NowInjector.class)
     @BeforeUpdate(NowInjector.class)
     private Date updateTime;
 }

@@ -1,7 +1,8 @@
 package io.ola.rbac.entity;
 
+import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
-import io.ola.crud.model.BaseEntity;
+import io.ola.crud.model.BaseAudit;
 import io.ola.rbac.enums.DataOperation;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,8 +17,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Table("sys_user_data")
-public class UserData extends BaseEntity<String> {
-
+public class UserData extends BaseAudit {
+    @Id
+    private String id;
     private String userId;
     /**
      * 数据的编码

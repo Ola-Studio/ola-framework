@@ -11,4 +11,6 @@ public interface UserService extends CRUDService<User> {
     User findByUsername(String username);
 
     User findByMobile(String mobile);
+
+    User getCurrentUser();
 }

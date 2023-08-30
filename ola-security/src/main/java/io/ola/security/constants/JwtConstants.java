@@ -12,7 +12,7 @@ public interface JwtConstants {
     String TOKEN_PARAM_NAME = TOKEN_HEADER;
     String TOKEN_PREFIX = "Bearer ";
     String SECRET = Base64Encoder.encode(IdUtil.fastUUID() + IdUtil.fastUUID());
-    String IDENTITY_KEY = "Identity";
+    String IDENTITY_KEY = "identity";
     Long EXPIRES_IN_SECOND = 900L;
     Long REFRESH_TOKEN_EXPIRES_IN_SECOND = 86400L;
     Long REMEMBER_ME_IN_SECONDS = 10080L;

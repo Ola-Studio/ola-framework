@@ -6,8 +6,13 @@ import io.ola.rbac.entity.User;
 import io.ola.rbac.entity.table.Tables;
 import io.ola.rbac.service.PasswordEncoder;
 import io.ola.rbac.service.UserService;
+import io.ola.security.authenticate.AuthenticateUtils;
+import io.ola.security.model.Authentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @author yiuman
@@ -33,5 +38,14 @@ public class UserServiceImpl extends BaseCRUDService<User> implements UserServic
     @Override
     public User findByMobile(String mobile) {
         return get(QueryWrapper.create().where(Tables.USER.MOBILE.eq(mobile)));
+    }
+
+    @Override
+    public User getCurrentUser() {
+        Authentication authentication = AuthenticateUtils.getAuthentication();
+        if (Objects.isNull(authentication) || Authentication.ANONYMOUS.equals(authentication)) {
+            return null;
+        }
+        return get((Serializable) authentication.getPrincipal());
     }
 }

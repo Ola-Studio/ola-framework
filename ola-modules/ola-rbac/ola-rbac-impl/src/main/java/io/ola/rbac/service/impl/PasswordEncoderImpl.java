@@ -13,6 +13,6 @@ public class PasswordEncoderImpl implements PasswordEncoder {
 
     @Override
     public String encode(String password) {
-        return DigestUtil.bcrypt(password);
+        return DigestUtil.md5Hex(password);
     }
 }

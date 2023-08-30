@@ -20,12 +20,12 @@ public class CreateAdminUserRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-//        User admin = userService.findByUsername(ADMIN_USERNAME);
-//        if (Objects.isNull(admin)) {
-//            admin = new User();
-//            admin.setUsername(ADMIN_USERNAME);
-//            admin.setPassword("ola123456");
-//            userService.save(admin);
-//        }
+        User admin = userService.findByUsername(ADMIN_USERNAME);
+        if (Objects.isNull(admin)) {
+            admin = new User();
+            admin.setUsername(ADMIN_USERNAME);
+            admin.setPassword("ola123456");
+            userService.save(admin);
+        }
     }
 }

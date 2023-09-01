@@ -3,6 +3,7 @@ package io.ola.crud.query.annotation;
 import com.mybatisflex.core.constant.SqlConsts;
 import io.ola.crud.enums.Clauses;
 import io.ola.crud.query.ConditionHandler;
+import io.ola.crud.query.handler.LikeConditionHandler;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.Retention;
@@ -18,9 +19,6 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Like {
 
     @AliasFor(annotation = QueryField.class)
-    String method() default "";
-
-    @AliasFor(annotation = QueryField.class)
     String mapping() default "";
 
     @AliasFor(annotation = QueryField.class)
@@ -30,5 +28,5 @@ public @interface Like {
     boolean require() default false;
 
     @AliasFor(annotation = QueryField.class)
-    Class<? extends ConditionHandler> handler() default ConditionHandler.class;
+    Class<? extends ConditionHandler> handler() default LikeConditionHandler.class;
 }

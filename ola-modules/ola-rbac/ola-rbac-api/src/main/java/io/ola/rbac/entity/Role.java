@@ -3,7 +3,6 @@ package io.ola.rbac.entity;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
 import io.ola.crud.model.BaseAudit;
-import io.ola.crud.model.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -17,6 +16,6 @@ import lombok.EqualsAndHashCode;
 public class Role extends BaseAudit {
     @Id
     private String id;
-    private String roleName;
+    private String name;
     private String remark;
 }

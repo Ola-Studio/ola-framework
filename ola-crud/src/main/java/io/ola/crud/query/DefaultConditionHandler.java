@@ -1,10 +1,9 @@
 package io.ola.crud.query;
 
-import cn.hutool.core.util.ReflectUtil;
-import com.mybatisflex.core.constant.SqlConsts;
 import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryCondition;
 import com.mybatisflex.core.query.QueryWrapper;
+import io.ola.crud.enums.Clauses;
 import io.ola.crud.model.QueryFieldMeta;
 
 import java.util.function.Consumer;
@@ -20,9 +19,15 @@ public enum DefaultConditionHandler implements ConditionHandler {
     public Consumer<QueryWrapper> handle(QueryFieldMeta queryFieldMeta, Object conditionValue) {
         QueryCondition queryCondition = new QueryCondition();
         queryCondition.setColumn(new QueryColumn(queryFieldMeta.getMapping()));
-        queryCondition.setLogic((String) ReflectUtil.getStaticFieldValue(ReflectUtil.getField(SqlConsts.class, queryFieldMeta.getMethod())));
+        queryCondition.setLogic(queryFieldMeta.getMethod());
         queryCondition.setValue(conditionValue);
-        return queryWrapper -> queryWrapper.where(queryCondition);
+        return queryWrapper -> {
+            if (Clauses.AND == queryFieldMeta.getClauses()) {
+                queryWrapper.and(queryCondition);
+            } else {
+                queryWrapper.or(queryCondition);
+            }
+        };
     }
 
 }

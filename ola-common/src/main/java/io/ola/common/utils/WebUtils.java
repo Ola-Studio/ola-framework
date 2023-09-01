@@ -174,8 +174,12 @@ public final class WebUtils {
     }
 
     public static Page getPageRequest() {
-        return Optional.ofNullable(WebUtils.getCurrentRequestBindData(Page.class))
+        Page page = Optional.ofNullable(WebUtils.getCurrentRequestBindData(Page.class))
                 .orElse(Page.of(1, 20));
+        if (page.getPageNumber() < 1) {
+            page.setPageNumber(1);
+        }
+        return page;
     }
 
     public static String getRequestURI() {

@@ -18,8 +18,10 @@ import io.ola.crud.model.CRUDMeta;
 import io.ola.crud.model.EntityMeta;
 import io.ola.crud.model.InjectFieldMeta;
 import io.ola.crud.query.annotation.Query;
+import io.ola.crud.rest.BaseQueryAPI;
 import io.ola.crud.rest.BaseRESTAPI;
 import io.ola.crud.service.CRUDService;
+import io.ola.crud.service.QueryService;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.core.ResolvableType;
 
@@ -40,11 +42,11 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unchecked")
 public final class CRUD {
 
-    private static final Map<Class<? extends BaseRESTAPI<?>>, CRUDMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, CRUDMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, BaseMapper<?>> ENTITY_CLASS_MAPPER_MAP = new ConcurrentHashMap<>();
 
-    public static <ENTITY> CRUDMeta<ENTITY> getCRUDMeta(Class<? extends BaseRESTAPI<ENTITY>> apiClass) {
+    public static <ENTITY> CRUDMeta<ENTITY> getCRUDMeta(Class<?> apiClass) {
         CRUDMeta<ENTITY> crudMeta = (CRUDMeta<ENTITY>) CRUD_META_MAP.get(apiClass);
         if (Objects.isNull(crudMeta)) {
             crudMeta = initCRUDMeta(apiClass);
@@ -53,8 +55,12 @@ public final class CRUD {
         return crudMeta;
     }
 
-    public static <ENTITY> CRUDService<ENTITY> getService(Class<? extends BaseRESTAPI<ENTITY>> crudClass) {
-        return getCRUDMeta(crudClass).getService();
+    public static <ENTITY, API extends BaseRESTAPI<ENTITY>> CRUDService<ENTITY> getService(Class<API> crudClass) {
+        return (CRUDService<ENTITY>) getCRUDMeta(crudClass).getCrudService();
+    }
+
+    public static <ENTITY, API extends BaseQueryAPI<ENTITY>> QueryService<ENTITY> getQueryService(Class<API> queryClass) {
+        return (QueryService<ENTITY>) getCRUDMeta(queryClass).getQueryService();
     }
 
     public static <ENTITY, M extends BaseMapper<ENTITY>> M getMapper(Class<ENTITY> entityClass) {
@@ -81,22 +87,37 @@ public final class CRUD {
         return getCRUDMeta(crudClass).getQueryClass();
     }
 
-    private static <ENTITY> CRUDMeta<ENTITY> initCRUDMeta(Class<? extends BaseRESTAPI<ENTITY>> crudClass) {
-        synchronized (crudClass) {
-            TypeReference<CRUDService<ENTITY>> reference = new TypeReference<>() {
-            };
-            Type typeArgument = TypeUtil.getTypeArgument(crudClass, 0);
-            final ParameterizedType parameterizedType = (ParameterizedType) reference.getType();
-            final Class<CRUDService<ENTITY>> rawType = (Class<CRUDService<ENTITY>>) parameterizedType.getRawType();
+    private static <ENTITY> CRUDMeta<ENTITY> initCRUDMeta(Class<?> apiClass) {
+        synchronized (apiClass) {
+            Type typeArgument = TypeUtil.getTypeArgument(apiClass, 0);
             Class<ENTITY> entityClass = (Class<ENTITY>) typeArgument;
-            final Class<?>[] genericTypes = new Class[]{entityClass};
-            final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
-            CRUDService<ENTITY> iService = SpringUtil.getBean(beanNames[0], rawType);
-            Query query = AnnotationUtil.getAnnotation(crudClass, Query.class);
+            Query query = AnnotationUtil.getAnnotation(apiClass, Query.class);
             Class<?> queryClass = Objects.isNull(query) ? null : query.value();
             EntityMeta<ENTITY> entityEntityMeta = getEntityMeta((Class<ENTITY>) typeArgument);
-            return new CRUDMeta<>(crudClass, entityClass, iService, entityEntityMeta, queryClass);
+            CRUDService<ENTITY> crudService = getCrudService(entityClass);
+            QueryService<ENTITY> queryService = getSelectService(entityClass);
+            return new CRUDMeta<>(apiClass, entityClass, crudService, queryService, entityEntityMeta, queryClass);
         }
+    }
+
+    public static <ENTITY> QueryService<ENTITY> getSelectService(Class<ENTITY> entityClass) {
+        TypeReference<QueryService<ENTITY>> queryReference = new TypeReference<>() {
+        };
+        final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
+        final Class<QueryService<ENTITY>> rawType = (Class<QueryService<ENTITY>>) parameterizedType.getRawType();
+        final Class<?>[] genericTypes = new Class[]{entityClass};
+        final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
+        return SpringUtil.getBean(beanNames[0], rawType);
+    }
+
+    public static <ENTITY> CRUDService<ENTITY> getCrudService(Class<ENTITY> entityClass) {
+        TypeReference<CRUDService<ENTITY>> queryReference = new TypeReference<>() {
+        };
+        final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
+        final Class<CRUDService<ENTITY>> rawType = (Class<CRUDService<ENTITY>>) parameterizedType.getRawType();
+        final Class<?>[] genericTypes = new Class[]{entityClass};
+        final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
+        return SpringUtil.getBean(beanNames[0], rawType);
     }
 
     public static <ENTITY> EntityMeta<ENTITY> getEntityMeta(Class<ENTITY> entityClass) {

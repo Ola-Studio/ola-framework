@@ -15,14 +15,13 @@ import com.mybatisflex.core.util.SqlUtil;
 import io.ola.crud.CRUD;
 import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.model.EntityMeta;
+import io.ola.crud.model.FieldValue;
+import io.ola.crud.model.IDs;
 import io.ola.crud.service.CRUDService;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -45,7 +44,19 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
     public <ID extends Serializable> ID getId(ENTITY entity) {
         EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
         try {
-            return (ID) CollUtil.getFirst(entityMeta.getIdFields()).get(entity);
+            List<Field> idFields = entityMeta.getIdFields();
+            if (CollUtil.size(idFields) > 1) {
+                return (ID) IDs.builder()
+                        .ids(
+                                idFields.stream()
+                                        .map(field -> new FieldValue(field, ReflectUtil.getFieldValue(entity, field)))
+                                        .collect(Collectors.toList())
+                        )
+                        .build();
+            } else {
+                return (ID) CollUtil.getFirst(idFields).get(entity);
+            }
+
         } catch (IllegalAccessException illegalAccessException) {
             throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
         }
@@ -86,7 +97,11 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
     @Override
     public <T extends ENTITY> T save(T entity) {
         beforeSave(entity);
-        getDao().insertOrUpdate(entity);
+        if (isNew(entity)) {
+            getDao().insert(entity);
+        } else {
+            getDao().update(entity);
+        }
         afterSave(entity);
         return entity;
     }
@@ -94,7 +109,7 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
     @SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored", "SameParameterValue"})
     <T extends ENTITY> void saveBatch(Collection<T> entities, int batchSize) {
         Class<BaseMapper<ENTITY>> usefulClass = (Class<BaseMapper<ENTITY>>) ClassUtil.getUsefulClass(getDao().getClass());
-        SqlUtil.toBool(Db.executeBatch(entities, batchSize, usefulClass, BaseMapper::insert));
+        SqlUtil.toBool(Db.executeBatch(entities, batchSize, usefulClass, BaseMapper::insertOrUpdate));
     }
 
     @Override
@@ -144,5 +159,28 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
     @Override
     public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
         return getDao().paginate(page, queryWrapper);
+    }
+
+    @Override
+    public <T extends ENTITY> boolean isNew(T entity) {
+        boolean isNew = CRUDService.super.isNew(entity);
+        if (isNew) {
+            return true;
+        }
+
+
+        Serializable id = getId(entity);
+        if (id instanceof IDs ids) {
+            EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
+            Map<Field, ColumnInfo> fieldColumnInfoMap = entityMeta.getFieldColumnInfoMap();
+            Map<String, Object> idQuery = ids.getIds().stream().collect(Collectors.toMap(fieldValue -> {
+                ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldValue.getField());
+                return columnInfo.getColumn();
+            }, FieldValue::getValue));
+            return Objects.nonNull(getDao().selectOneByMap(idQuery));
+        } else {
+            return Objects.nonNull(getDao().selectOneById(getId(entity)));
+        }
+
     }
 }

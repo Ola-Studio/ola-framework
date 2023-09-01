@@ -1,11 +1,14 @@
 package io.ola.rbac.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
 import io.ola.crud.model.BaseAudit;
-import io.ola.crud.model.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
 
 /**
  * @author yiuman
@@ -17,9 +20,11 @@ import lombok.EqualsAndHashCode;
 public class User extends BaseAudit {
     @Id
     private String id;
+    @NotBlank
     private String username;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String mobile;
     private String avatar;
-    private Integer status = 1;
+    private Integer status = BigDecimal.ONE.intValue();
 }

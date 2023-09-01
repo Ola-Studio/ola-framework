@@ -1,6 +1,8 @@
 package io.ola.rbac.runner;
 
+import io.ola.rbac.entity.Role;
 import io.ola.rbac.entity.User;
+import io.ola.rbac.service.RoleService;
 import io.ola.rbac.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -16,16 +18,23 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CreateAdminUserRunner implements CommandLineRunner {
     private final UserService userService;
-    private static final String ADMIN_USERNAME = "admin";
+    private final RoleService roleService;
+    private static final String ADMIN = "admin";
 
     @Override
     public void run(String... args) {
-        User admin = userService.findByUsername(ADMIN_USERNAME);
+        User admin = userService.findByUsername(ADMIN);
         if (Objects.isNull(admin)) {
             admin = new User();
-            admin.setUsername(ADMIN_USERNAME);
+            admin.setUsername(ADMIN);
             admin.setPassword("ola123456");
             userService.save(admin);
         }
+        Role adminRole = new Role();
+        adminRole.setId(ADMIN);
+        adminRole.setName("超级管理员");
+        roleService.save(adminRole);
+        roleService.bindUserRole(admin, adminRole);
     }
+
 }

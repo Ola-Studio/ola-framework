@@ -18,9 +18,6 @@ import java.lang.annotation.RetentionPolicy;
 public @interface NotEquals {
 
     @AliasFor(annotation = QueryField.class)
-    String method() default "";
-
-    @AliasFor(annotation = QueryField.class)
     String mapping() default "";
 
     @AliasFor(annotation = QueryField.class)

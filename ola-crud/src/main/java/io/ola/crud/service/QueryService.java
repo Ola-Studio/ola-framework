@@ -11,7 +11,7 @@ import java.util.List;
  * @author yiuman
  * @date 2023/8/2
  */
-public interface SelectService<ENTITY> {
+public interface QueryService<ENTITY> {
 
     <ID extends Serializable> ID getId(ENTITY entity);
 

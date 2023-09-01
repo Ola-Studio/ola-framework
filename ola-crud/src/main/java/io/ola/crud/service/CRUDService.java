@@ -6,7 +6,7 @@ package io.ola.crud.service;
  * @date 2023/8/2
  */
 public interface CRUDService<ENTITY>
-        extends SelectService<ENTITY>,
+        extends QueryService<ENTITY>,
         EditableService<ENTITY>,
         DeletableService<ENTITY> {
 }

@@ -1,6 +1,5 @@
 package io.ola.crud.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.BaseMapper;
@@ -15,7 +14,6 @@ import com.mybatisflex.core.util.SqlUtil;
 import io.ola.crud.CRUD;
 import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.model.EntityMeta;
-import io.ola.crud.model.FieldValue;
 import io.ola.crud.model.IDs;
 import io.ola.crud.service.CRUDService;
 
@@ -42,24 +40,7 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
 
     @Override
     public <ID extends Serializable> ID getId(ENTITY entity) {
-        EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
-        try {
-            List<Field> idFields = entityMeta.getIdFields();
-            if (CollUtil.size(idFields) > 1) {
-                return (ID) IDs.builder()
-                        .ids(
-                                idFields.stream()
-                                        .map(field -> new FieldValue(field, ReflectUtil.getFieldValue(entity, field)))
-                                        .collect(Collectors.toList())
-                        )
-                        .build();
-            } else {
-                return (ID) CollUtil.getFirst(idFields).get(entity);
-            }
-
-        } catch (IllegalAccessException illegalAccessException) {
-            throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
-        }
+        return CRUD.getId(entity);
     }
 
     @Override
@@ -95,11 +76,17 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
     }
 
     @Override
+    public <T extends ENTITY> void beforeSave(T entity) {
+    }
+
+    @Override
     public <T extends ENTITY> T save(T entity) {
         beforeSave(entity);
         if (isNew(entity)) {
+            InjectUtils.doBeforeSaveInject(entity);
             getDao().insert(entity);
         } else {
+            InjectUtils.doBeforeUpdateInject(entity);
             getDao().update(entity);
         }
         afterSave(entity);
@@ -168,18 +155,11 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
             return true;
         }
 
-
         Serializable id = getId(entity);
         if (id instanceof IDs ids) {
-            EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
-            Map<Field, ColumnInfo> fieldColumnInfoMap = entityMeta.getFieldColumnInfoMap();
-            Map<String, Object> idQuery = ids.getIds().stream().collect(Collectors.toMap(fieldValue -> {
-                ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldValue.getField());
-                return columnInfo.getColumn();
-            }, FieldValue::getValue));
-            return Objects.nonNull(getDao().selectOneByMap(idQuery));
+            return Objects.isNull(CRUD.queryByIds(ids, entityClass));
         } else {
-            return Objects.nonNull(getDao().selectOneById(getId(entity)));
+            return Objects.isNull(getDao().selectOneById(getId(entity)));
         }
 
     }

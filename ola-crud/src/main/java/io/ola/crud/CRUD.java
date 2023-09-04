@@ -1,11 +1,14 @@
 package io.ola.crud;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.mybatisflex.core.BaseMapper;
+import com.mybatisflex.core.table.ColumnInfo;
 import com.mybatisflex.core.table.TableInfo;
 import com.mybatisflex.core.table.TableInfoFactory;
 import io.ola.common.utils.SpringUtils;
@@ -14,9 +17,7 @@ import io.ola.crud.annotation.BeforeUpdate;
 import io.ola.crud.annotation.DeleteTag;
 import io.ola.crud.annotation.Sort;
 import io.ola.crud.inject.Injector;
-import io.ola.crud.model.CRUDMeta;
-import io.ola.crud.model.EntityMeta;
-import io.ola.crud.model.InjectFieldMeta;
+import io.ola.crud.model.*;
 import io.ola.crud.query.annotation.Query;
 import io.ola.crud.rest.BaseQueryAPI;
 import io.ola.crud.rest.BaseRESTAPI;
@@ -25,6 +26,7 @@ import io.ola.crud.service.QueryService;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.core.ResolvableType;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -70,9 +72,8 @@ public final class CRUD {
         }
         SqlSessionTemplate sqlSessionTemplate = SpringUtils.getBean(SqlSessionTemplate.class);
         Collection<Class<?>> mappers = sqlSessionTemplate.getConfiguration().getMapperRegistry().getMappers();
-        Class<?> matchMapperClass = mappers.stream().filter(mapperClass -> {
-                    return Objects.equals(TypeUtil.getTypeArgument(mapperClass, 0), entityClass);
-                })
+        Class<?> matchMapperClass = mappers.stream()
+                .filter(mapperClass -> Objects.equals(TypeUtil.getTypeArgument(mapperClass, 0), entityClass))
                 .findFirst()
                 .orElseThrow(
                         () -> new RuntimeException(String.format("can not found mapper for entity %s", entityClass))
@@ -83,8 +84,8 @@ public final class CRUD {
         return (M) baseMapper;
     }
 
-    public static <ENTITY> Class<?> getQueryClass(Class<? extends BaseRESTAPI<ENTITY>> crudClass) {
-        return getCRUDMeta(crudClass).getQueryClass();
+    public static Class<?> getQueryClass(Class<?> apiClass) {
+        return getCRUDMeta(apiClass).getQueryClass();
     }
 
     private static <ENTITY> CRUDMeta<ENTITY> initCRUDMeta(Class<?> apiClass) {
@@ -106,7 +107,7 @@ public final class CRUD {
         final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
         final Class<QueryService<ENTITY>> rawType = (Class<QueryService<ENTITY>>) parameterizedType.getRawType();
         final Class<?>[] genericTypes = new Class[]{entityClass};
-        final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
+        final String[] beanNames = SpringUtils.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
         return SpringUtil.getBean(beanNames[0], rawType);
     }
 
@@ -116,7 +117,7 @@ public final class CRUD {
         final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
         final Class<CRUDService<ENTITY>> rawType = (Class<CRUDService<ENTITY>>) parameterizedType.getRawType();
         final Class<?>[] genericTypes = new Class[]{entityClass};
-        final String[] beanNames = SpringUtil.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
+        final String[] beanNames = SpringUtils.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
         return SpringUtil.getBean(beanNames[0], rawType);
     }
 
@@ -187,5 +188,53 @@ public final class CRUD {
             injectFieldMeta.setForce((Boolean) memberValues.get("force"));
             return injectFieldMeta;
         }).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public static <ID extends Serializable, ENTITY> ID getId(ENTITY entity) {
+        EntityMeta<ENTITY> entityMeta = (EntityMeta<ENTITY>) CRUD.getEntityMeta(entity.getClass());
+        try {
+            List<Field> idFields = entityMeta.getIdFields();
+            if (CollUtil.size(idFields) > 1) {
+                return (ID) IDs.builder()
+                        .ids(
+                                idFields.stream()
+                                        .map(field -> new FieldValue(field, ReflectUtil.getFieldValue(entity, field)))
+                                        .collect(Collectors.toList())
+                        )
+                        .build();
+            } else {
+                return (ID) CollUtil.getFirst(idFields).get(entity);
+            }
+
+        } catch (IllegalAccessException illegalAccessException) {
+            throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
+        }
+    }
+
+    public static <RELATION_ENTITY> void insertIfNotExists(RELATION_ENTITY relation) {
+        Class<RELATION_ENTITY> entityClass = (Class<RELATION_ENTITY>) relation.getClass();
+        BaseMapper<RELATION_ENTITY> baseMapper = getMapper(entityClass);
+        if (Objects.isNull(baseMapper)) {
+            throw new RuntimeException(StrUtil.format("can not found mapper by class `{}`", entityClass));
+        }
+        Serializable id = getId(relation);
+        RELATION_ENTITY queryEntity = (id instanceof IDs)
+                ? queryByIds((IDs) id, entityClass)
+                : baseMapper.selectOneById(getId(id));
+        if (Objects.isNull(queryEntity)) {
+            baseMapper.insert(relation);
+        }
+
+    }
+
+    public static <ENTITY> ENTITY queryByIds(IDs ids, Class<ENTITY> entityClass) {
+        BaseMapper<?> baseMapper = getMapper(entityClass);
+        EntityMeta<ENTITY> entityMeta = getEntityMeta(entityClass);
+        Map<Field, ColumnInfo> fieldColumnInfoMap = entityMeta.getFieldColumnInfoMap();
+        Map<String, Object> idQuery = ids.getIds().stream().collect(Collectors.toMap(fieldValue -> {
+            ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldValue.getField());
+            return columnInfo.getColumn();
+        }, FieldValue::getValue));
+        return (ENTITY) baseMapper.selectOneByMap(idQuery);
     }
 }

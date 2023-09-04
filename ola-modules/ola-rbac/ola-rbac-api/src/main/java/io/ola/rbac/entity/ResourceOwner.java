@@ -1,7 +1,9 @@
 package io.ola.rbac.entity;
 
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import io.ola.crud.model.BaseAudit;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,7 +18,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Table("sys_resource_owner")
 public class ResourceOwner extends BaseAudit {
-    @Id
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
     private String id;
     /**
      * 拥有者ID

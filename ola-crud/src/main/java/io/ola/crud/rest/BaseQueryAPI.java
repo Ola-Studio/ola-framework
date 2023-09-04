@@ -26,10 +26,10 @@ public interface BaseQueryAPI<ENTITY> {
     }
 
     @GetMapping
-    default Page<ENTITY> page(HttpServletRequest request) {
+    default R<Page<ENTITY>> page(HttpServletRequest request) {
         cn.hutool.db.Page pageRequest = WebUtils.getPageRequest();
         Page<ENTITY> mfPage = Page.of(pageRequest.getPageNumber(), pageRequest.getPageSize());
-        return getQueryService().page(mfPage, buildWrapper(request));
+        return R.ok(getQueryService().page(mfPage, buildWrapper(request)));
     }
 
     @GetMapping("/{id}")
@@ -44,7 +44,7 @@ public interface BaseQueryAPI<ENTITY> {
      * @return 查询包装器
      */
     default QueryWrapper buildWrapper(HttpServletRequest request) {
-        Class<?> queryClass = CRUD.getQueryClass((Class<? extends BaseRESTAPI<ENTITY>>) getClass());
+        Class<?> queryClass = CRUD.getQueryClass(getClass());
         if (Objects.isNull(queryClass)) {
             return QueryWrapper.create();
         }

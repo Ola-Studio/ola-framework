@@ -2,7 +2,9 @@ package io.ola.rbac.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import io.ola.crud.model.BaseAudit;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -18,7 +20,7 @@ import java.math.BigDecimal;
 @Table("sys_user")
 @Data
 public class User extends BaseAudit {
-    @Id
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
     private String id;
     @NotBlank
     private String username;

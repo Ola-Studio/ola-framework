@@ -40,22 +40,30 @@ public class EntityMeta<ENTITY> {
 
     public Map<Field, ColumnInfo> getFieldColumnInfoMap() {
         if (MapUtil.isEmpty(fieldColumnInfoMap)) {
-            fieldColumnInfoMap = getTableInfo().getColumnInfoList()
-                    .stream().collect(Collectors.toMap(columnInfo -> {
-                        String property = columnInfo.getProperty();
-                        Field field = ReflectUtil.getField(entityClass, property);
-                        field.setAccessible(true);
-                        return field;
-                    }, columnInfo -> columnInfo));
+            TableInfo tableInfo = getTableInfo();
+            fieldColumnInfoMap = tableInfo.getColumnInfoList()
+                    .stream().collect(Collectors.toMap(this::getColumnInfoField, columnInfo -> columnInfo));
+            fieldColumnInfoMap.putAll(tableInfo.getPrimaryKeyList()
+                    .stream().collect(Collectors.toMap(this::getColumnInfoField, columnInfo -> columnInfo)));
         }
         return fieldColumnInfoMap;
     }
 
     public Map<String, ColumnInfo> getFieldNameColumnInfoMap() {
         if (MapUtil.isEmpty(fieldNameColumnInfoMap)) {
-            fieldNameColumnInfoMap = getTableInfo().getColumnInfoList()
+            TableInfo tableInfo = getTableInfo();
+            fieldNameColumnInfoMap = tableInfo.getColumnInfoList()
                     .stream().collect(Collectors.toMap(ColumnInfo::getProperty, columnInfo -> columnInfo));
+            fieldNameColumnInfoMap.putAll(tableInfo.getPrimaryKeyList()
+                    .stream().collect(Collectors.toMap(ColumnInfo::getProperty, columnInfo -> columnInfo)));
         }
         return fieldNameColumnInfoMap;
+    }
+
+    public Field getColumnInfoField(ColumnInfo columnInfo) {
+        String property = columnInfo.getProperty();
+        Field field = ReflectUtil.getField(entityClass, property);
+        field.setAccessible(true);
+        return field;
     }
 }

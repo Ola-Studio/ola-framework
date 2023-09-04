@@ -37,7 +37,6 @@ public interface EditableService<ENTITY> {
         EntityMeta<ENTITY> entityMeta = (EntityMeta<ENTITY>) CRUD.getEntityMeta(entity.getClass());
         List<Field> idFields = entityMeta.getIdFields();
         return CollUtil.isEmpty(idFields) || idFields.stream().allMatch(field -> Objects.isNull(ReflectUtil.getFieldValue(entity, field)));
-
     }
 
 }

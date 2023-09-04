@@ -7,6 +7,7 @@ import io.ola.rbac.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -21,6 +22,7 @@ public class CreateAdminUserRunner implements CommandLineRunner {
     private final RoleService roleService;
     private static final String ADMIN = "admin";
 
+    @Transactional
     @Override
     public void run(String... args) {
         User admin = userService.findByUsername(ADMIN);
@@ -30,11 +32,13 @@ public class CreateAdminUserRunner implements CommandLineRunner {
             admin.setPassword("ola123456");
             userService.save(admin);
         }
+
         Role adminRole = new Role();
         adminRole.setId(ADMIN);
         adminRole.setName("超级管理员");
         roleService.save(adminRole);
         roleService.bindUserRole(admin, adminRole);
+
     }
 
 }

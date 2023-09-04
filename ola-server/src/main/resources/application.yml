@@ -21,8 +21,3 @@ spring:
 ola:
   security:
     authenticate-endpoint: /login
-mybatis-flex:
-  global-config:
-    key-config:
-      key-type: generator
-      value: uuid

@@ -1,6 +1,7 @@
 package io.ola.rbac.entity;
 
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -15,5 +16,4 @@ public class UserRole {
     private String userId;
     @Id
     private String roleId;
-
 }

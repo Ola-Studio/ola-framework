@@ -2,7 +2,7 @@ package io.ola.rbac.service.impl;
 
 import cn.hutool.core.lang.Assert;
 import io.ola.crud.CRUD;
-import io.ola.crud.service.impl.BaseCRUDService;
+import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.rbac.entity.Role;
 import io.ola.rbac.entity.User;
 import io.ola.rbac.entity.UserRole;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class RoleServiceImpl extends BaseCRUDService<Role> implements RoleService {
+public class RoleServiceImpl extends BaseCrudService<Role> implements RoleService {
 
     @Override
     public void bindUserRole(User user, Role role) {
@@ -27,4 +27,5 @@ public class RoleServiceImpl extends BaseCRUDService<Role> implements RoleServic
         userRole.setRoleId(role.getId());
         CRUD.insertIfNotExists(userRole);
     }
+
 }

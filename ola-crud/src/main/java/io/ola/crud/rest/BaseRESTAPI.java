@@ -7,7 +7,7 @@ import io.ola.common.http.R;
 import io.ola.common.utils.SpringUtils;
 import io.ola.crud.CRUD;
 import io.ola.crud.groups.Save;
-import io.ola.crud.service.CRUDService;
+import io.ola.crud.service.CrudService;
 import jakarta.validation.groups.Default;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,17 +28,17 @@ import java.io.Serializable;
 @SuppressWarnings("unchecked")
 public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
 
-    default CRUDService<ENTITY> getCrudService() {
+    default CrudService<ENTITY> getCrudService() {
         return CRUD.getService(getClass());
     }
 
     @PostMapping
-    default R<ENTITY> post(@RequestBody ENTITY entity) {
+    default <T extends ENTITY> R<T> post(@RequestBody T entity) {
         return R.ok(getProxy().doValidateAndSave(entity));
     }
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
-    default R<ENTITY> form(ENTITY entity) {
+    default <T extends ENTITY> R<T> form(T entity) {
         return R.ok(getProxy().doValidateAndSave(entity));
     }
 
@@ -48,8 +48,8 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
         return R.ok();
     }
 
-    default ENTITY doValidateAndSave(ENTITY entity) {
-        CRUDService<ENTITY> service = getCrudService();
+    default <T extends ENTITY> T doValidateAndSave(T entity) {
+        CrudService<ENTITY> service = getCrudService();
         Class<?>[] validateGroups = service.isNew(entity)
                 ? new Class<?>[]{Default.class, Save.class}
                 : new Class<?>[]{Default.class, Module.class};

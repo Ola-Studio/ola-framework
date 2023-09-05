@@ -1,6 +1,7 @@
 package io.ola.crud.model;
 
 import cn.hutool.core.util.StrUtil;
+import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.table.ColumnInfo;
 import io.ola.crud.CRUD;
 import io.ola.crud.enums.Clauses;
@@ -61,6 +62,8 @@ public class QueryFieldMeta {
 
     private Class<? extends ConditionHandler> handleClass;
 
+    private QueryColumn queryColumn;
+
     public QueryFieldMeta(Class<?> objectClass, Field field, QueryField queryField, Annotation sourceAnnotation) {
         this.objectClass = objectClass;
         this.field = field;
@@ -69,12 +72,14 @@ public class QueryFieldMeta {
         this.clauses = queryField.clauses();
         this.require = queryField.require();
         this.mapping = queryField.mapping();
+
+
         if (StrUtil.isBlank(mapping)) {
-            EntityMeta<?> entityMeta = CRUD.getEntityMeta(objectClass);
-            ColumnInfo columnInfo = entityMeta.getFieldNameColumnInfoMap()
-                    .get(field.getName());
-            mapping = columnInfo.getColumn();
+            this.mapping = com.mybatisflex.processor.util.StrUtil.camelToUnderline(
+                    field.getName()
+            );
         }
+        this.queryColumn = new QueryColumn(this.mapping);
         if (!ConditionHandler.class.equals(queryField.handler())) {
             this.handleClass = queryField.handler();
         }

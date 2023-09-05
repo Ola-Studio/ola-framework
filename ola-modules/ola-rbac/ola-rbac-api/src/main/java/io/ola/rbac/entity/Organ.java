@@ -1,6 +1,9 @@
 package io.ola.rbac.entity;
 
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import io.ola.crud.model.BaseTreeEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,16 +16,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @Table("sys_org")
 public class Organ extends BaseTreeEntity<Organ, String> {
-    private String organName;
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
+    private String id;
+    private String name;
     private String remark;
-
-    @Override
-    public void setId(String s) {
-        super.setId(s);
-    }
-
-    @Override
-    public void setParentId(String parentId) {
-        super.setParentId(parentId);
-    }
 }

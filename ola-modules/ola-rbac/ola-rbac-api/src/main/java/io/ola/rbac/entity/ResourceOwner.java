@@ -1,12 +1,10 @@
 package io.ola.rbac.entity;
 
 import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.keygen.KeyGenerators;
-import io.ola.crud.model.BaseAudit;
+import io.ola.rbac.constants.TableNames;
+import io.ola.rbac.enums.OwnerType;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * 资源拥有者
@@ -14,22 +12,22 @@ import lombok.EqualsAndHashCode;
  * @author yiuman
  * @date 2023/8/4
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@Table("sys_resource_owner")
-public class ResourceOwner extends BaseAudit {
-    @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
-    private String id;
+@Table(TableNames.RESOURCE_OWNER)
+public class ResourceOwner {
     /**
      * 拥有者ID
      */
-    private String objectId;
+    @Id
+    private String ownerId;
+
     /**
      * 资源ID
      */
+    @Id
     private String resourceId;
     /**
      * 拥有者类型（可能是用户、角色）
      */
-    private String ownerType;
+    private OwnerType ownerType;
 }

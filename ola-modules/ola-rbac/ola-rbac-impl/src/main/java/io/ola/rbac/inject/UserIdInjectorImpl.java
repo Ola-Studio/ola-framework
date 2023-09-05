@@ -1,4 +1,4 @@
-package io.ola.rbac.service.impl;
+package io.ola.rbac.inject;
 
 import io.ola.crud.inject.UserIdInjector;
 import io.ola.rbac.entity.User;

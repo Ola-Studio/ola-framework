@@ -1,8 +1,7 @@
 package io.ola.security.authenticate;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.ola.security.model.Token;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -25,8 +24,7 @@ public interface TokenService {
         return JwtUtils.resolveToken(request);
     }
 
-    @SuppressWarnings("rawtypes")
-    default Jwt<Header, Claims> parse(String token) {
+    default Jws<Claims> parse(String token) {
         return JwtUtils.parse(token);
     }
 

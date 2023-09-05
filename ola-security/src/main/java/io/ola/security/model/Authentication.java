@@ -53,7 +53,11 @@ public interface Authentication {
 
         public Default(Object principal) {
             this.principal = principal;
-            this.authenticated = true;
+        }
+
+        public Default(Object principal, boolean authenticated) {
+            this.principal = principal;
+            this.authenticated = authenticated;
         }
     }
 

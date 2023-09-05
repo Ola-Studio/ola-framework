@@ -1,7 +1,7 @@
 package io.ola.rbac.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import io.ola.crud.service.impl.BaseCRUDService;
+import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.rbac.entity.User;
 import io.ola.rbac.entity.table.Tables;
 import io.ola.rbac.service.PasswordEncoder;
@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl extends BaseCRUDService<User> implements UserService {
+public class UserServiceImpl extends BaseCrudService<User> implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 

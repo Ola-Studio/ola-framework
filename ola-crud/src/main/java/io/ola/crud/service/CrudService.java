@@ -5,7 +5,7 @@ package io.ola.crud.service;
  * @author yiuman
  * @date 2023/8/2
  */
-public interface CRUDService<ENTITY>
+public interface CrudService<ENTITY>
         extends QueryService<ENTITY>,
         EditableService<ENTITY>,
         DeletableService<ENTITY> {

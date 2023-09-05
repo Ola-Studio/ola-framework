@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 public class EntityMeta<ENTITY> {
     private Class<ENTITY> entityClass;
     private List<Field> idFields;
+    private Field creatorField;
+    private Field orgField;
     private List<InjectFieldMeta> beforeSaveInjectMetas;
     private List<InjectFieldMeta> beforeUpdateInjectMetas;
     private Field deleteTagField;

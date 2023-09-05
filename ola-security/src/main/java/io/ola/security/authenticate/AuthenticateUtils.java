@@ -2,11 +2,10 @@ package io.ola.security.authenticate;
 
 import cn.hutool.core.exceptions.ValidateException;
 import cn.hutool.core.lang.Assert;
-import cn.hutool.core.thread.threadlocal.NamedThreadLocal;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.ola.common.utils.SpringUtils;
 import io.ola.common.utils.WebUtils;
 import io.ola.security.constants.SecurityConstants;
@@ -23,7 +22,8 @@ import java.util.Optional;
  * @date 2023/8/9
  */
 public final class AuthenticateUtils {
-    private static final ThreadLocal<Authentication> AUTHENTICATION_THREAD_LOCAL = new NamedThreadLocal<>("SECURITY");
+    private static final ThreadLocal<Authentication> AUTHENTICATION_THREAD_LOCAL
+            = ThreadUtil.createThreadLocal(true);
 
     private AuthenticateUtils() {
     }
@@ -53,15 +53,14 @@ public final class AuthenticateUtils {
         return authenticateService;
     }
 
-    @SuppressWarnings("rawtypes")
     public static Authentication resolve(HttpServletRequest request) {
         TokenService tokenService = SpringUtils.getBean(TokenService.class);
         String token = tokenService.getToken(request);
         if (StrUtil.isBlank(token)) {
             return Authentication.ANONYMOUS;
         }
-        Jwt<Header, Claims> jwt = tokenService.parse(token);
-        Claims claims = jwt.getBody();
+        Jws<Claims> jws = tokenService.parse(token);
+        Claims claims = jws.getBody();
         String grantType = (String) claims.get(SecurityConstants.GRANT_TYPE);
         Authentication.Default authentication = new Authentication.Default(
                 claims.get(JwtUtils.JWT_PROPERTIES.getIdentityKey()),

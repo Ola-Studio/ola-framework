@@ -15,7 +15,7 @@ import io.ola.crud.CRUD;
 import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.model.EntityMeta;
 import io.ola.crud.model.IDs;
-import io.ola.crud.service.CRUDService;
+import io.ola.crud.service.CrudService;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -29,7 +29,7 @@ import java.util.stream.StreamSupport;
  * @date 2023/8/2
  */
 @SuppressWarnings({"unchecked"})
-public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
+public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
 
     private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 0);
     private static final int DEFAULT_BATCH_SIZE = 1000;
@@ -117,7 +117,7 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
 
     @Override
     public ENTITY get(Serializable id) {
-        return getDao().selectOneById(id);
+        return getDao().selectOneWithRelationsById(id);
     }
 
     @Override
@@ -140,17 +140,17 @@ public abstract class BaseCRUDService<ENTITY> implements CRUDService<ENTITY> {
 
     @Override
     public List<ENTITY> list(QueryWrapper queryWrapper) {
-        return getDao().selectListByQueryAs(queryWrapper, entityClass);
+        return getDao().selectListWithRelationsByQuery(queryWrapper);
     }
 
     @Override
     public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
-        return getDao().paginate(page, queryWrapper);
+        return getDao().paginateWithRelations(page, queryWrapper);
     }
 
     @Override
     public <T extends ENTITY> boolean isNew(T entity) {
-        boolean isNew = CRUDService.super.isNew(entity);
+        boolean isNew = CrudService.super.isNew(entity);
         if (isNew) {
             return true;
         }

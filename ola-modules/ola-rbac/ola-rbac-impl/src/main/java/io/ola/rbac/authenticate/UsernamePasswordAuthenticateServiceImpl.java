@@ -31,7 +31,7 @@ public class UsernamePasswordAuthenticateServiceImpl implements AuthenticateServ
                 .orElse(userService.findByMobile(authenticationVM.getLoginId()));
         Assert.notNull(user, () -> PASSWORD_ERROR);
         Assert.equals(user.getPassword(), passwordEncoder.encode(authenticationVM.getPassword()), () -> PASSWORD_ERROR);
-        return new Authentication.Default(user.getId());
+        return new Authentication.Default(user.getId(), true);
     }
 
 

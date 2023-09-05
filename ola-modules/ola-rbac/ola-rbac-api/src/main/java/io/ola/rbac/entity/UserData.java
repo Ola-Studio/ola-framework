@@ -4,7 +4,7 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.keygen.KeyGenerators;
-import io.ola.crud.model.BaseAudit;
+import io.ola.crud.model.BaseEntity;
 import io.ola.rbac.enums.DataOperation;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Table("sys_user_data")
-public class UserData extends BaseAudit {
+public class UserData extends BaseEntity<String> {
     @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
     private String id;
     private String userId;

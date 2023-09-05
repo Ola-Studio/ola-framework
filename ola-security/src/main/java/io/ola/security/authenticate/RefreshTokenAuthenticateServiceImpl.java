@@ -1,8 +1,7 @@
 package io.ola.security.authenticate;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.ola.security.model.Authentication;
 import io.ola.security.model.RefreshTokenVM;
 import lombok.RequiredArgsConstructor;
@@ -13,21 +12,15 @@ import lombok.RequiredArgsConstructor;
  * @author yiuman
  * @date 2023/8/11
  */
-@SuppressWarnings("rawtypes")
 @RequiredArgsConstructor
 public class RefreshTokenAuthenticateServiceImpl implements AuthenticateService<RefreshTokenVM> {
     private final TokenService tokenService;
 
     @Override
     public Authentication authenticate(RefreshTokenVM authenticationVM) {
-        Jwt<Header, Claims> jwt = tokenService.parse(authenticationVM.getRefreshToken());
-        Claims body = jwt.getBody();
-        return new Authentication.Default(body.get(JwtUtils.JWT_PROPERTIES.getIdentityKey()));
-    }
-
-    @Override
-    public void logout(Authentication authentication) {
-
+        Jws<Claims> jws = tokenService.parse(authenticationVM.getRefreshToken());
+        Claims body = jws.getBody();
+        return new Authentication.Default(body.get(JwtUtils.JWT_PROPERTIES.getIdentityKey()), true);
     }
 
     @Override

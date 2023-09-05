@@ -1,6 +1,5 @@
 package io.ola.crud.model;
 
-import com.mybatisflex.annotation.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,8 +10,6 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseEntity<ID> extends BaseAudit {
-    @Id
-    private ID id;
-
+public abstract class BaseEntity<ID> extends BaseAudit {
+    public abstract ID getId();
 }

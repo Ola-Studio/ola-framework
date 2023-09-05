@@ -79,12 +79,11 @@ public final class JwtUtils {
         return parse(token).getBody();
     }
 
-    @SuppressWarnings("rawtypes")
-    public static Jwt<Header, Claims> parse(String token) {
+    public static Jws<Claims> parse(String token) {
         JwtParser jwtParser = Jwts.parserBuilder()
                 .setSigningKey(signKey())
                 .build();
-        return jwtParser.parseClaimsJwt(token);
+        return jwtParser.parseClaimsJws(token);
     }
 
     public static Key signKey() {

@@ -1,7 +1,11 @@
 package io.ola.rbac.entity;
 
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import io.ola.crud.model.BaseTreeEntity;
+import io.ola.rbac.enums.ResourceType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
@@ -15,19 +19,14 @@ import lombok.Setter;
 @Table("sys_resource")
 @Setter
 public class Resource extends BaseTreeEntity<Resource, String> {
-    private String resourceName;
-    private Integer type;
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.uuid)
+    private String id;
+    private String name;
+    private ResourceType type;
     private String code;
     private String icon;
     private String uri;
-
-    @Override
-    public void setId(String s) {
-        super.setId(s);
-    }
-
-    @Override
-    public void setParentId(String parentId) {
-        super.setParentId(parentId);
-    }
+    private String method;
+    private String expression;
+    private String remark;
 }

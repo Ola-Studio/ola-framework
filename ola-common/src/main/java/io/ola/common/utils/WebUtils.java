@@ -3,7 +3,6 @@ package io.ola.common.utils;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson2.JSON;
 import io.ola.common.http.JsonHttpServletRequestWrapper;
 import jakarta.servlet.ServletInputStream;
@@ -38,10 +37,7 @@ import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -348,29 +344,25 @@ public final class WebUtils {
      *
      * @param request 当前请求
      * @return 匹配的定义路径
-     * @throws Exception 反射异常
      */
-    public static String getRequestMapping(HttpServletRequest request) throws Exception {
+    public static String getRequestMapping(HttpServletRequest request) {
         final String slash = "/";
-        RequestMappingHandlerMapping requestMappingHandlerMapping = SpringUtil.getBean(RequestMappingHandlerMapping.class);
-        HandlerExecutionChain handler = requestMappingHandlerMapping.getHandler(request);
-        if (handler == null) {
-            return null;
+        RequestMappingHandlerMapping requestMappingHandlerMapping = getRequestMappingHandlerMapping(request);
+        HandlerMethod handlerMethod = null;
+        try {
+            handlerMethod = (HandlerMethod) requestMappingHandlerMapping.getHandler(request).getHandler();
+        } catch (Throwable ignore) {
         }
-
-        HandlerMethod handlerHandler = (HandlerMethod) handler.getHandler();
-
         String beanPath = null;
-        String[] annotatedElementMappings = getAnnotatedElementMappings(handlerHandler.getBeanType());
+        String[] annotatedElementMappings = getAnnotatedElementMappings(handlerMethod.getBeanType());
         if (ArrayUtil.isNotEmpty(annotatedElementMappings)) {
             List<String> sourcePaths = Arrays.stream(annotatedElementMappings).filter(annotatedElementMapping -> request.getRequestURI().contains(annotatedElementMapping))
                     .collect(Collectors.toList());
             beanPath = CollUtil.getFirst(sourcePaths);
         }
-
         String combinePath = requestMappingHandlerMapping
                 .getPathMatcher()
-                .combine(beanPath, getAnnotatedElementMapping(handlerHandler.getMethod()));
+                .combine(beanPath, getAnnotatedElementMapping(handlerMethod.getMethod()));
         if (StringUtils.hasLength(combinePath) && !combinePath.startsWith(slash)) {
             combinePath = slash + combinePath;
         }
@@ -385,25 +377,56 @@ public final class WebUtils {
      * @return controller定义了的路径
      * @throws Exception 反射异常
      */
-    public static String getCurrentRequestMapping() throws Exception {
+    public static String getCurrentRequestMapping() {
         return getRequestMapping(getRequest());
     }
+
+    public static RequestMappingHandlerMapping getRequestMappingHandlerMapping(HttpServletRequest request) {
+        Map<String, RequestMappingHandlerMapping> beansOfType = SpringUtils.getBeansOfType(RequestMappingHandlerMapping.class);
+        Collection<RequestMappingHandlerMapping> values = beansOfType.values();
+        if (CollUtil.isEmpty(values)) {
+            return null;
+        }
+        RequestMappingHandlerMapping requestMappingHandlerMapping = null;
+        for (RequestMappingHandlerMapping item : values) {
+            try {
+                if (Objects.nonNull(item.getHandler(request))) {
+                    requestMappingHandlerMapping = item;
+                    break;
+                }
+            } catch (Throwable ignore) {
+            }
+
+        }
+        return requestMappingHandlerMapping;
+    }
+
 
     /**
      * 根据当前请求获取当前请求的mvc处理器方法
      *
      * @param request 当前请求
      * @return mvc处理器方法
-     * @throws Exception 反射异常
      */
-    public static HandlerMethod getRequestHandlerMethod(HttpServletRequest request) throws Exception {
-        RequestMappingHandlerMapping requestMappingHandlerMapping = SpringUtil.getBean(RequestMappingHandlerMapping.class);
-        HandlerExecutionChain handler = requestMappingHandlerMapping.getHandler(request);
-        if (handler == null) {
+    public static HandlerMethod getRequestHandlerMethod(HttpServletRequest request) {
+        Map<String, RequestMappingHandlerMapping> beansOfType = SpringUtils.getBeansOfType(RequestMappingHandlerMapping.class);
+        Collection<RequestMappingHandlerMapping> values = beansOfType.values();
+        if (CollUtil.isEmpty(values)) {
             return null;
         }
+        HandlerExecutionChain handler = null;
+        for (RequestMappingHandlerMapping requestMappingHandlerMapping : values) {
+            try {
+                handler = requestMappingHandlerMapping.getHandler(request);
+                if (Objects.nonNull(handler)) {
+                    break;
+                }
+            } catch (Throwable ignore) {
+            }
 
-        return (HandlerMethod) handler.getHandler();
+        }
+
+        return Objects.isNull(handler) ? null : (HandlerMethod) handler.getHandler();
     }
 
 

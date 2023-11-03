@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
+ * 数据权限注入器
+ *
  * @author yiuman
  * @date 2023/9/5
  */
@@ -46,7 +48,7 @@ public class DataScopeConditionInjector implements ConditionInjector {
             addCondition(
                     queryWrapper,
                     fieldColumnInfoMap.get(CollUtil.getFirst(entityMeta.getIdFields())),
-                    readDataScope.getUserIds()
+                    readDataScope.getDataIds()
             );
             //用户ID
             addCondition(

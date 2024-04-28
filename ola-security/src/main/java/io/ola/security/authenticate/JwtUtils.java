@@ -61,7 +61,7 @@ public final class JwtUtils {
 
     public static boolean validateToken(String token) {
         try {
-            getClaims(token);
+            parse(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT signature.");
@@ -73,10 +73,6 @@ public final class JwtUtils {
             log.info("JWT token compact of handler are invalid.");
         }
         return false;
-    }
-
-    public static Claims getClaims(String token) {
-        return parse(token).getBody();
     }
 
     public static Jws<Claims> parse(String token) {

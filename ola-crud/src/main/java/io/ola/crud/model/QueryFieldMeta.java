@@ -2,8 +2,6 @@ package io.ola.crud.model;
 
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryColumn;
-import com.mybatisflex.core.table.ColumnInfo;
-import io.ola.crud.CRUD;
 import io.ola.crud.enums.Clauses;
 import io.ola.crud.query.ConditionHandler;
 import io.ola.crud.query.annotation.QueryField;

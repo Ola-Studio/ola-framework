@@ -1,6 +1,5 @@
 package io.ola.rbac.service;
 
-import cn.hutool.core.thread.ThreadUtil;
 import io.ola.rbac.mode.UserOnlineInfo;
 
 import java.util.function.Supplier;

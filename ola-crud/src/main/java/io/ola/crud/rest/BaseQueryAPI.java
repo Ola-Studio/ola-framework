@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2023/8/31
  */

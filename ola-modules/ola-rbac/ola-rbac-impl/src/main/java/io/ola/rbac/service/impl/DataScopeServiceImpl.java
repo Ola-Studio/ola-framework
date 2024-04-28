@@ -64,6 +64,8 @@ public class DataScopeServiceImpl extends BaseCrudService<DataScope> implements 
                 case DEPT -> organIds.addAll(organs.stream().map(Organ::getId).collect(Collectors.toSet()));
                 case SUPERIOR -> organIds.addAll(OrganService.fetchAllSubOrganIds(organs));
                 case SUBORDINATE -> organIds.addAll(OrganService.fetchAllSupOrganIds(organs));
+                default -> {
+                }
             }
         }
 

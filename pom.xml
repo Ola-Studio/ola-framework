@@ -26,10 +26,10 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
 
         <hutool.version>5.8.20</hutool.version>
-        <spring-boot.version>3.1.1</spring-boot.version>
+        <spring-boot.version>3.2.5</spring-boot.version>
         <lombok.version>1.18.24</lombok.version>
         <typesafe-config.version>1.4.2</typesafe-config.version>
         <fastjson2.version>2.0.12</fastjson2.version>
@@ -78,6 +78,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -109,7 +111,6 @@
                 <version>${maven-checkstyle-plugin.version}</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
-                    <encoding>UTF-8</encoding>
                     <failOnViolation>true</failOnViolation>
                     <linkXRef>false</linkXRef>
                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
@@ -125,6 +126,36 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <configuration>
+                            <updatePomFile>true</updatePomFile>
+                            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <inherited>true</inherited>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
             </plugin>
         </plugins>
     </build>

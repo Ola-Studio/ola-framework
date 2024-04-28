@@ -1,6 +1,5 @@
 package io.ola.rbac.service;
 
-import io.ola.crud.query.annotation.Query;
 import io.ola.crud.service.CrudService;
 import io.ola.rbac.entity.Resource;
 import io.ola.rbac.query.ResourceQuery;

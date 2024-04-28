@@ -1,6 +1,5 @@
 package io.ola.crud.query.handler;
 
-import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.ola.crud.enums.Clauses;
 import io.ola.crud.model.QueryFieldMeta;

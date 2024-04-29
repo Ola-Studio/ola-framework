@@ -5,6 +5,7 @@ import cn.hutool.core.util.ReflectUtil;
 import com.mybatisflex.core.table.ColumnInfo;
 import com.mybatisflex.core.table.TableInfo;
 import com.mybatisflex.core.table.TableInfoFactory;
+import io.ola.crud.enums.DbType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class EntityMeta<ENTITY> {
     private Field sortTagField;
     private Map<Field, ColumnInfo> fieldColumnInfoMap;
     private Map<String, ColumnInfo> fieldNameColumnInfoMap;
+    private DbType dbType;
 
     public TableInfo getTableInfo() {
         return TableInfoFactory.ofEntityClass(entityClass);

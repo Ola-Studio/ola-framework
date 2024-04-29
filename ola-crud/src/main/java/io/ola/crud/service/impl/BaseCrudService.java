@@ -163,4 +163,9 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
         }
 
     }
+
+    @Override
+    public long count(QueryWrapper queryWrapper) {
+        return getDao().selectCountByQuery(queryWrapper);
+    }
 }

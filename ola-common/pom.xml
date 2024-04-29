@@ -41,5 +41,11 @@
             <artifactId>text-ui</artifactId>
             <version>${text-ui.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+        </dependency>
     </dependencies>
 </project>

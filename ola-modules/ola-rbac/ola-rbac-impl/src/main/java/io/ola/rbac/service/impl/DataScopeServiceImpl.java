@@ -3,7 +3,7 @@ package io.ola.rbac.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import io.ola.crud.query.QueryHelper;
-import io.ola.crud.service.impl.BaseCrudService;
+import io.ola.crud.service.impl.BaseService;
 import io.ola.rbac.entity.*;
 import io.ola.rbac.enums.DataOperation;
 import io.ola.rbac.model.DataScopeModel;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Service
-public class DataScopeServiceImpl extends BaseCrudService<DataScope> implements DataScopeService {
+public class DataScopeServiceImpl extends BaseService<DataScope> implements DataScopeService {
     private final UserService userService;
     private final UserDataService userDataService;
     private final ResourceService resourceService;

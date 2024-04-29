@@ -26,4 +26,6 @@ public interface QueryService<ENTITY> {
     List<ENTITY> list(QueryWrapper queryWrapper);
 
     Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper);
+
+    long count(QueryWrapper queryWrapper);
 }

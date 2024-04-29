@@ -42,6 +42,7 @@
         <druid.version>1.2.3</druid.version>
         <mybatis-spring.version>3.0.2</mybatis-spring.version>
         <mysql.version>8.0.28</mysql.version>
+        <javassist.version>3.30.2-GA</javassist.version>
     </properties>
 
     <dependencies>

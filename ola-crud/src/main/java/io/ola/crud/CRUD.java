@@ -3,6 +3,7 @@ package io.ola.crud;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.TypeReference;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
@@ -11,11 +12,13 @@ import com.mybatisflex.core.BaseMapper;
 import com.mybatisflex.core.table.ColumnInfo;
 import com.mybatisflex.core.table.TableInfo;
 import com.mybatisflex.core.table.TableInfoFactory;
+import io.ola.common.utils.JavassistUtils;
 import io.ola.common.utils.SpringUtils;
 import io.ola.crud.annotation.BeforeSave;
 import io.ola.crud.annotation.BeforeUpdate;
 import io.ola.crud.annotation.DeleteTag;
 import io.ola.crud.annotation.Sort;
+import io.ola.crud.enums.DbType;
 import io.ola.crud.inject.ConditionInject;
 import io.ola.crud.inject.ConditionInjector;
 import io.ola.crud.inject.Injector;
@@ -25,6 +28,10 @@ import io.ola.crud.rest.BaseQueryAPI;
 import io.ola.crud.rest.BaseRESTAPI;
 import io.ola.crud.service.CrudService;
 import io.ola.crud.service.QueryService;
+import io.ola.crud.service.impl.BaseCrudService;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.core.ResolvableType;
 
@@ -45,6 +52,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unchecked")
 public final class CRUD {
+    private static final String ENTITY_DB_TYPE_MAP = "ENTITY_DB_TYPE_MAP";
 
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
@@ -121,13 +129,22 @@ public final class CRUD {
     }
 
     public static <ENTITY> CrudService<ENTITY> getCrudService(Class<ENTITY> entityClass) {
+        return getCrudService(entityClass, BaseCrudService.class);
+    }
+
+    public static <ENTITY, SERVICE extends CrudService<ENTITY>> CrudService<ENTITY> getCrudService(Class<ENTITY> entityClass, Class<SERVICE> serviceClass) {
         TypeReference<CrudService<ENTITY>> queryReference = new TypeReference<>() {
         };
         final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
         final Class<CrudService<ENTITY>> rawType = (Class<CrudService<ENTITY>>) parameterizedType.getRawType();
         final Class<?>[] genericTypes = new Class[]{entityClass};
         final String[] beanNames = SpringUtils.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
-        return SpringUtil.getBean(beanNames[0], rawType);
+        if (ArrayUtil.isNotEmpty(beanNames)) {
+            return SpringUtils.getBean(beanNames[0], rawType);
+        }
+
+        Class<? extends CrudService<ENTITY>> makeService = makeServiceClass(entityClass, serviceClass);
+        return SpringUtils.getBean(makeService, true);
     }
 
     public static <ENTITY> EntityMeta<ENTITY> getEntityMeta(Class<ENTITY> entityClass) {
@@ -153,8 +170,10 @@ public final class CRUD {
             entityMeta.setIdFields(idFields);
 
         }
+        EntityDbTypeMap entityDbTypeMap = SpringUtils.getBean(ENTITY_DB_TYPE_MAP, EntityDbTypeMap.class);
         entityMeta.setDeleteTagField(getDeleteTagField(entityClass));
         entityMeta.setSortTagField(getSortField(entityClass));
+        entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(DbType.MYSQL));
         entityMeta.setBeforeSaveInjectMetas(getInjectFieldMetas(entityClass, BeforeSave.class));
         entityMeta.setBeforeUpdateInjectMetas(getInjectFieldMetas(entityClass, BeforeUpdate.class));
         return entityMeta;
@@ -246,4 +265,37 @@ public final class CRUD {
         }, FieldValue::getValue));
         return (ENTITY) baseMapper.selectOneByMap(idQuery);
     }
+
+    public static synchronized <ENTITY, SERVICE extends CrudService<ENTITY>> Class<SERVICE> makeServiceClass(
+            Class<ENTITY> entityClass,
+            Class<SERVICE> superServiceClass) {
+        String entityClassName = entityClass.getName();
+        String formatName = String.format("%sCrudService$$javassist", entityClassName);
+        Class<?> serviceClass;
+        ClassPool classPool = JavassistUtils.defaultPool();
+        try {
+            serviceClass = classPool.getClassLoader().loadClass(formatName);
+        } catch (ClassNotFoundException e) {
+            CtClass ctClass;
+            try {
+                ctClass = classPool.getCtClass(formatName);
+                serviceClass = ctClass.getClass();
+            } catch (NotFoundException notFoundCtClass) {
+                try {
+                    ctClass = classPool.makeClass(formatName, classPool.get(superServiceClass.getName()));
+                    JavassistUtils.addTypeArgument(ctClass, superServiceClass, new Class[]{entityClass}, null, null);
+                    serviceClass = ctClass.toClass(entityClass);
+                } catch (Throwable throwable) {
+                    throw new RuntimeException(
+                            StrUtil.format("make class for entityType `{}` and serviceType `{}` happen error",
+                                    entityClass,
+                                    superServiceClass
+                            )
+                    );
+                }
+            }
+        }
+        return (Class<SERVICE>) serviceClass;
+    }
+
 }

@@ -9,4 +9,5 @@ public interface CrudService<ENTITY>
         extends QueryService<ENTITY>,
         EditableService<ENTITY>,
         DeletableService<ENTITY> {
+
 }

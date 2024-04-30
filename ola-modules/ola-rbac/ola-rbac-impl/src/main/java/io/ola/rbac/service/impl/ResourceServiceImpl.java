@@ -3,7 +3,6 @@ package io.ola.rbac.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
-import io.ola.crud.CRUD;
 import io.ola.crud.query.QueryHelper;
 import io.ola.crud.service.CrudService;
 import io.ola.crud.service.impl.BaseService;
@@ -25,10 +24,13 @@ import java.util.stream.Collectors;
  * @date 2023/9/5
  */
 @Service
-@RequiredArgsConstructor
 public class ResourceServiceImpl extends BaseService<Resource> implements ResourceService {
 
-    private final CrudService<ResourceOwner> resourceOwnerCrudService = CRUD.getCrudService(ResourceOwner.class);
+    private final CrudService<ResourceOwner> resourceOwnerCrudService;
+
+    public ResourceServiceImpl(CrudService<ResourceOwner> resourceOwnerCrudService) {
+        this.resourceOwnerCrudService = resourceOwnerCrudService;
+    }
 
     @Override
     public List<Resource> findListByQuery(ResourceQuery resourceQuery) {

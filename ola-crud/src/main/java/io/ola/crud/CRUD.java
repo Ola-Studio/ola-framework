@@ -29,7 +29,6 @@ import io.ola.crud.rest.BaseRESTAPI;
 import io.ola.crud.service.CrudService;
 import io.ola.crud.service.QueryService;
 import io.ola.crud.service.impl.BaseCrudService;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -133,18 +132,26 @@ public final class CRUD {
     }
 
     public static <ENTITY, SERVICE extends CrudService<ENTITY>> CrudService<ENTITY> getCrudService(Class<ENTITY> entityClass, Class<SERVICE> serviceClass) {
+        CrudService<ENTITY> contextBean = getContextBean(entityClass);
+        if (Objects.nonNull(contextBean)) {
+            return contextBean;
+        }
+        Class<? extends CrudService<ENTITY>> makeService = makeServiceClass(entityClass, serviceClass);
+        return SpringUtils.getBean(makeService, true);
+    }
+
+    public static <ENTITY> CrudService<ENTITY> getContextBean(Class<ENTITY> entityClass) {
         TypeReference<CrudService<ENTITY>> queryReference = new TypeReference<>() {
         };
         final ParameterizedType parameterizedType = (ParameterizedType) queryReference.getType();
         final Class<CrudService<ENTITY>> rawType = (Class<CrudService<ENTITY>>) parameterizedType.getRawType();
         final Class<?>[] genericTypes = new Class[]{entityClass};
-        final String[] beanNames = SpringUtils.getBeanFactory().getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
+        final String[] beanNames = SpringUtils.getBeanFactory()
+                .getBeanNamesForType(ResolvableType.forClassWithGenerics(rawType, genericTypes));
         if (ArrayUtil.isNotEmpty(beanNames)) {
             return SpringUtils.getBean(beanNames[0], rawType);
         }
-
-        Class<? extends CrudService<ENTITY>> makeService = makeServiceClass(entityClass, serviceClass);
-        return SpringUtils.getBean(makeService, true);
+        return null;
     }
 
     public static <ENTITY> EntityMeta<ENTITY> getEntityMeta(Class<ENTITY> entityClass) {
@@ -272,30 +279,31 @@ public final class CRUD {
         String entityClassName = entityClass.getName();
         String formatName = String.format("%sCrudService$$javassist", entityClassName);
         Class<?> serviceClass;
-        ClassPool classPool = JavassistUtils.defaultPool();
         try {
-            serviceClass = classPool.getClassLoader().loadClass(formatName);
+            serviceClass = JavassistUtils.defaultPool().getClassLoader().loadClass(formatName);
         } catch (ClassNotFoundException e) {
             CtClass ctClass;
             try {
-                ctClass = classPool.getCtClass(formatName);
+                ctClass = JavassistUtils.defaultPool().getCtClass(formatName);
                 serviceClass = ctClass.getClass();
             } catch (NotFoundException notFoundCtClass) {
                 try {
-                    ctClass = classPool.makeClass(formatName, classPool.get(superServiceClass.getName()));
+                    ctClass = JavassistUtils.defaultPool().makeClass(formatName, JavassistUtils.getClass(superServiceClass));
                     JavassistUtils.addTypeArgument(ctClass, superServiceClass, new Class[]{entityClass}, null, null);
-                    serviceClass = ctClass.toClass(entityClass);
+                    serviceClass = ctClass.toClass();
                 } catch (Throwable throwable) {
                     throw new RuntimeException(
                             StrUtil.format("make class for entityType `{}` and serviceType `{}` happen error",
                                     entityClass,
                                     superServiceClass
-                            )
+                            ),
+                            throwable
                     );
                 }
             }
         }
         return (Class<SERVICE>) serviceClass;
+
     }
 
 }

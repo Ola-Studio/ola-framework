@@ -3,6 +3,7 @@ package io.ola.common.utils;
 import cn.hutool.extra.spring.SpringUtil;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -22,7 +23,8 @@ public final class SpringUtils extends SpringUtil {
         try {
             bean = getApplicationContext().getBean(clazz);
         } catch (NoSuchBeanDefinitionException var4) {
-            bean = force ? getApplicationContext().getAutowireCapableBeanFactory().createBean(clazz) : null;
+            bean = force ? getApplicationContext()
+                    .getAutowireCapableBeanFactory().createBean(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, true) : null;
         }
 
         return (T) bean;

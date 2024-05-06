@@ -33,10 +33,14 @@ public class CreateAdminUserRunner implements CommandLineRunner {
             userService.save(admin);
         }
 
-        Role adminRole = new Role();
-        adminRole.setId(ADMIN);
-        adminRole.setName("超级管理员");
-        roleService.save(adminRole);
+        Role adminRole = roleService.get(ADMIN);
+        if (Objects.isNull(adminRole)) {
+            adminRole = new Role();
+            adminRole.setId(ADMIN);
+            adminRole.setName("超级管理员");
+            roleService.save(adminRole);
+        }
+
         roleService.bindUserRole(admin, adminRole);
 
     }

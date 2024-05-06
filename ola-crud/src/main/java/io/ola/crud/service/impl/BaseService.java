@@ -4,13 +4,13 @@ import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.ola.crud.CRUD;
-import io.ola.crud.model.EntityMeta;
 import io.ola.crud.service.CrudService;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
+ * @param <ENTITY> 实体类型
  * @author yiuman
  * @date 2024/4/29
  */
@@ -19,9 +19,7 @@ public class BaseService<ENTITY> implements CrudService<ENTITY> {
     private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 0);
 
     protected <PROXY extends CrudService<ENTITY>> PROXY getProxy() {
-        EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
-
-        return (PROXY) CRUD.getCrudService(entityClass);
+        return CRUD.getProxyCrudService(entityClass);
     }
 
     @Override

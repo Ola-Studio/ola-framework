@@ -8,8 +8,6 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import com.mybatisflex.core.BaseMapper;
-import com.mybatisflex.core.table.ColumnInfo;
 import com.mybatisflex.core.table.TableInfo;
 import com.mybatisflex.core.table.TableInfoFactory;
 import io.ola.common.utils.JavassistUtils;
@@ -29,9 +27,9 @@ import io.ola.crud.rest.BaseRESTAPI;
 import io.ola.crud.service.CrudService;
 import io.ola.crud.service.QueryService;
 import io.ola.crud.service.impl.BaseCrudService;
+import io.ola.crud.service.impl.BaseMongoService;
 import javassist.CtClass;
 import javassist.NotFoundException;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.core.ResolvableType;
 
 import java.io.Serializable;
@@ -55,7 +53,6 @@ public final class CRUD {
 
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
-    private static final Map<Class<?>, BaseMapper<?>> ENTITY_CLASS_MAPPER_MAP = new ConcurrentHashMap<>();
 
     public static <ENTITY> CrudMeta<ENTITY> getCRUDMeta(Class<?> apiClass) {
         CrudMeta<ENTITY> crudMeta = (CrudMeta<ENTITY>) CRUD_META_MAP.get(apiClass);
@@ -74,24 +71,6 @@ public final class CRUD {
         return (QueryService<ENTITY>) getCRUDMeta(queryClass).getQueryService();
     }
 
-    public static <ENTITY, M extends BaseMapper<ENTITY>> M getMapper(Class<ENTITY> entityClass) {
-        BaseMapper<?> baseMapper = ENTITY_CLASS_MAPPER_MAP.get(entityClass);
-        if (Objects.nonNull(baseMapper)) {
-            return (M) baseMapper;
-        }
-        SqlSessionTemplate sqlSessionTemplate = SpringUtils.getBean(SqlSessionTemplate.class);
-        Collection<Class<?>> mappers = sqlSessionTemplate.getConfiguration().getMapperRegistry().getMappers();
-        Class<?> matchMapperClass = mappers.stream()
-                .filter(mapperClass -> Objects.equals(TypeUtil.getTypeArgument(mapperClass, 0), entityClass))
-                .findFirst()
-                .orElseThrow(
-                        () -> new RuntimeException(String.format("can not found mapper for entity %s", entityClass))
-                );
-
-        baseMapper = (BaseMapper<ENTITY>) sqlSessionTemplate.getMapper(matchMapperClass);
-        ENTITY_CLASS_MAPPER_MAP.put(entityClass, baseMapper);
-        return (M) baseMapper;
-    }
 
     public static Class<?> getQueryClass(Class<?> apiClass) {
         return getCRUDMeta(apiClass).getQueryClass();
@@ -131,13 +110,33 @@ public final class CRUD {
         return getCrudService(entityClass, BaseCrudService.class);
     }
 
-    public static <ENTITY, SERVICE extends CrudService<ENTITY>> CrudService<ENTITY> getCrudService(Class<ENTITY> entityClass, Class<SERVICE> serviceClass) {
-        CrudService<ENTITY> contextBean = getContextBean(entityClass);
+    public static <ENTITY, SERVICE extends CrudService<ENTITY>> SERVICE getProxyCrudService(Class<ENTITY> entityClass) {
+        EntityMeta<ENTITY> entityMeta = getEntityMeta(entityClass);
+        Class<? extends CrudService<ENTITY>> serviceClass =
+                (Class<? extends CrudService<ENTITY>>)
+                        (DbType.MONGODB == entityMeta.getDbType()
+                                ? BaseMongoService.class
+                                : BaseCrudService.class);
+        return (SERVICE) getProxyCrudService(entityClass, serviceClass);
+    }
+
+    public static <ENTITY, SERVICE extends CrudService<ENTITY>> SERVICE getProxyCrudService(Class<ENTITY> entityClass, Class<SERVICE> serviceClass) {
+        Class<? extends CrudService<ENTITY>> makeServiceClazz = makeServiceClass(entityClass, serviceClass);
+        SERVICE contextBean = (SERVICE) getContextBean(makeServiceClazz);
+        if (Objects.nonNull(contextBean)) {
+            return contextBean;
+        }
+
+        return (SERVICE) SpringUtils.getBean(makeServiceClazz, true);
+    }
+
+    public static <ENTITY, SERVICE extends CrudService<ENTITY>> SERVICE getCrudService(Class<ENTITY> entityClass, Class<SERVICE> serviceClass) {
+        SERVICE contextBean = (SERVICE) getContextBean(entityClass);
         if (Objects.nonNull(contextBean)) {
             return contextBean;
         }
         Class<? extends CrudService<ENTITY>> makeService = makeServiceClass(entityClass, serviceClass);
-        return SpringUtils.getBean(makeService, true);
+        return (SERVICE) SpringUtils.getBean(makeService, true);
     }
 
     public static <ENTITY> CrudService<ENTITY> getContextBean(Class<ENTITY> entityClass) {
@@ -177,7 +176,13 @@ public final class CRUD {
             entityMeta.setIdFields(idFields);
 
         }
-        EntityDbTypeMap entityDbTypeMap = SpringUtils.getBean(ENTITY_DB_TYPE_MAP, EntityDbTypeMap.class);
+        EntityDbTypeMap entityDbTypeMap;
+        try {
+            entityDbTypeMap = SpringUtils.getBean(ENTITY_DB_TYPE_MAP, EntityDbTypeMap.class);
+        } catch (Throwable ignore) {
+            entityDbTypeMap = new EntityDbTypeMap();
+        }
+
         entityMeta.setDeleteTagField(getDeleteTagField(entityClass));
         entityMeta.setSortTagField(getSortField(entityClass));
         entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(DbType.MYSQL));
@@ -244,33 +249,6 @@ public final class CRUD {
         } catch (IllegalAccessException illegalAccessException) {
             throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
         }
-    }
-
-    public static <RELATION_ENTITY> void insertIfNotExists(RELATION_ENTITY relation) {
-        Class<RELATION_ENTITY> entityClass = (Class<RELATION_ENTITY>) relation.getClass();
-        BaseMapper<RELATION_ENTITY> baseMapper = getMapper(entityClass);
-        if (Objects.isNull(baseMapper)) {
-            throw new RuntimeException(StrUtil.format("can not found mapper by class `{}`", entityClass));
-        }
-        Serializable id = getId(relation);
-        RELATION_ENTITY queryEntity = (id instanceof IDs)
-                ? queryByIds((IDs) id, entityClass)
-                : baseMapper.selectOneById(getId(id));
-        if (Objects.isNull(queryEntity)) {
-            baseMapper.insert(relation);
-        }
-
-    }
-
-    public static <ENTITY> ENTITY queryByIds(IDs ids, Class<ENTITY> entityClass) {
-        BaseMapper<?> baseMapper = getMapper(entityClass);
-        EntityMeta<ENTITY> entityMeta = getEntityMeta(entityClass);
-        Map<Field, ColumnInfo> fieldColumnInfoMap = entityMeta.getFieldColumnInfoMap();
-        Map<String, Object> idQuery = ids.getIds().stream().collect(Collectors.toMap(fieldValue -> {
-            ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldValue.getField());
-            return columnInfo.getColumn();
-        }, FieldValue::getValue));
-        return (ENTITY) baseMapper.selectOneByMap(idQuery);
     }
 
     public static synchronized <ENTITY, SERVICE extends CrudService<ENTITY>> Class<SERVICE> makeServiceClass(

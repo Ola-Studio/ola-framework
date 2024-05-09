@@ -21,5 +21,3 @@ spring:
 ola:
   security:
     authenticate-endpoint: /login
-  crud:
-    default-db-type: mongodb

@@ -16,7 +16,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +36,6 @@ import java.util.List;
  */
 @Configuration
 @ComponentScan(OLA.BASE_PACKAGE)
-@EnableConfigurationProperties(SecurityProperties.class)
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 public class OlaSecurityAutoConfiguration {
@@ -70,6 +68,7 @@ public class OlaSecurityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         // 设置允许跨域请求的域名

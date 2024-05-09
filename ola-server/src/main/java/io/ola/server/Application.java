@@ -1,11 +1,9 @@
 package io.ola.server;
 
 import com.mybatisflex.core.audit.AuditManager;
-import io.ola.common.constants.OLA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 
@@ -14,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
  * @date 2023/8/2
  */
 @SpringBootApplication
-@ComponentScan(basePackages = OLA.BASE_PACKAGE)
 public class Application {
 
     public static void main(String[] args) {

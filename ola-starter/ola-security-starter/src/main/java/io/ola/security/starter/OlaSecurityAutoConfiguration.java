@@ -72,7 +72,7 @@ public class OlaSecurityAutoConfiguration {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         // 设置允许跨域请求的域名
-        config.addAllowedOrigin(ALL);
+        config.addAllowedOriginPattern(ALL);
         // 是否允许证书 不再默认开启
         config.setAllowCredentials(true);
         // 设置允许的方法

@@ -46,11 +46,15 @@ public final class QueryHelper {
             Clauses clauses = queryFieldMeta.getClauses();
             Class<? extends ConditionHandler> handleClass = queryFieldMeta.getHandleClass();
             Consumer<QueryWrapper> queryWrapperConsumer;
+            Object fieldValue = ReflectUtil.getFieldValue(any, queryFieldMeta.getField());
+            if (Objects.isNull(fieldValue)) {
+                continue;
+            }
             if (Objects.nonNull(handleClass)) {
                 ConditionHandler conditionHandler = SpringUtils.getBean(handleClass, true);
-                queryWrapperConsumer = conditionHandler.handle(queryFieldMeta, ReflectUtil.getFieldValue(any, queryFieldMeta.getField()));
+                queryWrapperConsumer = conditionHandler.handle(queryFieldMeta, fieldValue);
             } else {
-                queryWrapperConsumer = DEFAULT_CONDITION_HANDLER.handle(queryFieldMeta, ReflectUtil.getFieldValue(any, queryFieldMeta.getField()));
+                queryWrapperConsumer = DEFAULT_CONDITION_HANDLER.handle(queryFieldMeta, fieldValue);
             }
             if (Clauses.AND == clauses) {
                 queryWrapperConsumer.accept(wrapper);

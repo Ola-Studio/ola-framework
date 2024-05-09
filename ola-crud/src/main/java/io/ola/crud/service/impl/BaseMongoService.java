@@ -87,14 +87,15 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
     }
 
     private Criteria toCriteria(QueryWrapper queryWrapper) {
-        Field connector = ReflectUtil.getField(QueryCondition.class, "connector");
-        connector.setAccessible(true);
         QueryCondition whereQueryCondition = CPI.getWhereQueryCondition(queryWrapper);
+        if (Objects.isNull(whereQueryCondition)) {
+            return new Criteria();
+        }
         Criteria criteria;
         if (Objects.isNull(whereQueryCondition.getValue())) {
             List<QueryWrapper> childSelect = CPI.getChildSelect(queryWrapper);
             criteria = new Criteria();
-            boolean isAndConnector = SqlConnector.AND == ReflectUtil.getFieldValue(whereQueryCondition, connector);
+            boolean isAndConnector = Objects.equals(SqlConnector.AND, ReflectUtil.getFieldValue(whereQueryCondition, "connector"));
             for (QueryWrapper wrapper : childSelect) {
                 Criteria childCriteria = toCriteria(wrapper);
                 if (isAndConnector) {

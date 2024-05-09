@@ -1,7 +1,6 @@
 package io.ola.rbac.service.impl;
 
 import io.ola.crud.query.QueryHelper;
-import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.crud.service.impl.BaseService;
 import io.ola.rbac.entity.UserData;
 import io.ola.rbac.query.UserDataQuery;

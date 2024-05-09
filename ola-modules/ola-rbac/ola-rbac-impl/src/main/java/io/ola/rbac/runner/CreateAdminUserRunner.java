@@ -18,9 +18,9 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class CreateAdminUserRunner implements CommandLineRunner {
+    private static final String ADMIN = "admin";
     private final UserService userService;
     private final RoleService roleService;
-    private static final String ADMIN = "admin";
 
     @Transactional
     @Override

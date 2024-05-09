@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 public interface Authentication {
 
     /**
+     * 匿名用户
+     */
+    Authentication.Default ANONYMOUS = new Default("ANONYMOUS");
+
+    /**
      * 被认证主体的身份
      */
     Object getPrincipal();
@@ -60,9 +65,4 @@ public interface Authentication {
             this.authenticated = authenticated;
         }
     }
-
-    /**
-     * 匿名用户
-     */
-    Authentication.Default ANONYMOUS = new Default("ANONYMOUS");
 }

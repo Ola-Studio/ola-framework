@@ -14,6 +14,9 @@ import java.util.Objects;
 public final class RbacUtils {
     public static final ThreadLocal<UserOnlineInfo> USER_ONLINE_INFO_THREAD_LOCAL = ThreadUtil.createThreadLocal(true);
 
+    private RbacUtils() {
+    }
+
     public static UserOnlineInfo getUserOnlineInfo() {
         UserOnlineInfo userOnlineInfo = USER_ONLINE_INFO_THREAD_LOCAL.get();
         if (Objects.isNull(userOnlineInfo)) {
@@ -31,8 +34,5 @@ public final class RbacUtils {
 
     public static void clear() {
         USER_ONLINE_INFO_THREAD_LOCAL.remove();
-    }
-
-    private RbacUtils() {
     }
 }

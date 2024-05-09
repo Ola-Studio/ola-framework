@@ -16,10 +16,13 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Equals {
     @AliasFor(annotation = QueryField.class)
     String mapping() default "";
+
     @AliasFor(annotation = QueryField.class)
     Clauses clauses() default Clauses.AND;
+
     @AliasFor(annotation = QueryField.class)
     boolean require() default false;
+
     @AliasFor(annotation = QueryField.class)
     Class<? extends ConditionHandler> handler() default ConditionHandler.class;
 }

@@ -32,8 +32,8 @@ import java.util.stream.StreamSupport;
 @SuppressWarnings({"unchecked"})
 public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
 
-    private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 0);
     private static final int DEFAULT_BATCH_SIZE = 1000;
+    private final Class<ENTITY> entityClass = (Class<ENTITY>) TypeUtil.getTypeArgument(getClass(), 0);
 
     protected <DAO extends BaseMapper<ENTITY>> DAO getDao() {
         return MapperUtils.getMapper(entityClass);

@@ -1,7 +1,6 @@
 package io.ola.rbac.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.crud.service.impl.BaseService;
 import io.ola.rbac.entity.User;
 import io.ola.rbac.entity.table.Tables;

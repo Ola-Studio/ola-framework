@@ -44,12 +44,6 @@ public class OlaSecurityAutoConfiguration {
     private static final String ALL = "*";
     private static final String ALL_URIS = "/**";
 
-    @RestController
-    @RequestMapping("#{securityProperties.baseEndpoint}")
-    @Authorize(AllowAll.class)
-    public static class AuthenticateController implements AuthenticateAPI {
-    }
-
     @Bean
     @ConditionalOnMissingBean(AuthorizeHandlerInterceptor.class)
     public AuthorizeHandlerInterceptor authorizeHandlerInterceptor(SecurityProperties securityProperties, List<RequestAuthorizeHandler> requestAuthorizeHandlers) {
@@ -60,21 +54,6 @@ public class OlaSecurityAutoConfiguration {
     @ConditionalOnMissingBean(RequestAuthorizeHandler.class)
     public RequestAuthorizeHandler requestAuthorizeHandler() {
         return new RequestAuthorizeHandler.Default();
-    }
-
-    @Configuration
-    @AutoConfigureBefore(WebMvcAutoConfiguration.WebMvcAutoConfigurationAdapter.class)
-    @ConditionalOnBean(AuthorizeHandlerInterceptor.class)
-    @RequiredArgsConstructor
-    @Order(-1)
-    public static class WebMvcConfiguration implements WebMvcConfigurer {
-
-        private final AuthorizeHandlerInterceptor authorizeHandlerInterceptor;
-
-        @Override
-        public void addInterceptors(InterceptorRegistry registry) {
-            registry.addInterceptor(authorizeHandlerInterceptor).addPathPatterns(ALL_URIS);
-        }
     }
 
     @Bean
@@ -104,6 +83,27 @@ public class OlaSecurityAutoConfiguration {
         UrlBasedCorsConfigurationSource configSource = new UrlBasedCorsConfigurationSource();
         configSource.registerCorsConfiguration(ALL_URIS, config);
         return new CorsFilter(configSource);
+    }
+
+    @RestController
+    @RequestMapping("#{securityProperties.baseEndpoint}")
+    @Authorize(AllowAll.class)
+    public static class AuthenticateController implements AuthenticateAPI {
+    }
+
+    @Configuration
+    @AutoConfigureBefore(WebMvcAutoConfiguration.WebMvcAutoConfigurationAdapter.class)
+    @ConditionalOnBean(AuthorizeHandlerInterceptor.class)
+    @RequiredArgsConstructor
+    @Order(-1)
+    public static class WebMvcConfiguration implements WebMvcConfigurer {
+
+        private final AuthorizeHandlerInterceptor authorizeHandlerInterceptor;
+
+        @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+            registry.addInterceptor(authorizeHandlerInterceptor).addPathPatterns(ALL_URIS);
+        }
     }
 
 }

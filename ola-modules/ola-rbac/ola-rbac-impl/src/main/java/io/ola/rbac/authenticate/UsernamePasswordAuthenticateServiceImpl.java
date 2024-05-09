@@ -21,9 +21,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UsernamePasswordAuthenticateServiceImpl implements AuthenticateService<PasswordLoginVM> {
+    private static final AuthenticationException PASSWORD_ERROR = new AuthenticationException("用户名或密码错误");
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private static final AuthenticationException PASSWORD_ERROR = new AuthenticationException("用户名或密码错误");
 
     @Override
     public Authentication authenticate(PasswordLoginVM authenticationVM) {

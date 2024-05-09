@@ -27,9 +27,9 @@ import java.util.Optional;
  */
 public class JsonHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
+    private final ParameterMap<String, String[]> parameterMap = new ParameterMap<>();
     private byte[] bytes;
     private Object parsedObject;
-    private final ParameterMap<String, String[]> parameterMap = new ParameterMap<>();
 
     public JsonHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);

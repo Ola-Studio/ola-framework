@@ -16,6 +16,7 @@ import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.model.EntityMeta;
 import io.ola.crud.model.IDs;
 import io.ola.crud.service.CrudService;
+import io.ola.crud.utils.MapperUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -35,7 +36,7 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
     private static final int DEFAULT_BATCH_SIZE = 1000;
 
     protected <DAO extends BaseMapper<ENTITY>> DAO getDao() {
-        return CRUD.getMapper(entityClass);
+        return MapperUtils.getMapper(entityClass);
     }
 
     @Override
@@ -157,7 +158,7 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
 
         Serializable id = getId(entity);
         if (id instanceof IDs ids) {
-            return Objects.isNull(CRUD.queryByIds(ids, entityClass));
+            return Objects.isNull(MapperUtils.queryByIds(ids, entityClass));
         } else {
             return Objects.isNull(getDao().selectOneById(getId(entity)));
         }

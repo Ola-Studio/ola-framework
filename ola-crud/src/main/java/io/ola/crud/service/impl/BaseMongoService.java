@@ -2,6 +2,7 @@ package io.ola.crud.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.constant.SqlConnector;
 import com.mybatisflex.core.constant.SqlConsts;
@@ -89,11 +90,11 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
         Field connector = ReflectUtil.getField(QueryCondition.class, "connector");
         connector.setAccessible(true);
         QueryCondition whereQueryCondition = CPI.getWhereQueryCondition(queryWrapper);
-        boolean isAndConnector = SqlConnector.AND == ReflectUtil.getFieldValue(whereQueryCondition, connector);
-        Criteria criteria = null;
+        Criteria criteria;
         if (Objects.isNull(whereQueryCondition.getValue())) {
             List<QueryWrapper> childSelect = CPI.getChildSelect(queryWrapper);
             criteria = new Criteria();
+            boolean isAndConnector = SqlConnector.AND == ReflectUtil.getFieldValue(whereQueryCondition, connector);
             for (QueryWrapper wrapper : childSelect) {
                 Criteria childCriteria = toCriteria(wrapper);
                 if (isAndConnector) {
@@ -103,13 +104,19 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
                 }
             }
         } else {
-            Criteria where = Criteria.where(whereQueryCondition.getColumn().getName());
+            criteria = Criteria.where(whereQueryCondition.getColumn().getName());
             switch (whereQueryCondition.getLogic()) {
-                case SqlConsts.GT -> where.gt(whereQueryCondition.getValue());
-                case SqlConsts.GE -> where.gte(whereQueryCondition.getValue());
-                case SqlConsts.LT -> where.lt(whereQueryCondition.getValue());
-                case SqlConsts.LE -> where.lte(whereQueryCondition.getValue());
-                default -> where.is(whereQueryCondition.getValue());
+                case SqlConsts.GT -> criteria.gt(whereQueryCondition.getValue());
+                case SqlConsts.GE -> criteria.gte(whereQueryCondition.getValue());
+                case SqlConsts.LT -> criteria.lt(whereQueryCondition.getValue());
+                case SqlConsts.LE -> criteria.lte(whereQueryCondition.getValue());
+                case SqlConsts.LIKE -> {
+                    String value = StrUtil.toString(whereQueryCondition.getValue());
+                    value = StrUtil.replaceFirst(value, "%", "");
+                    value = StrUtil.replaceLast(value, "%", "");
+                    criteria.regex(value, "i");
+                }
+                default -> criteria.is(whereQueryCondition.getValue());
             }
         }
         return criteria;
@@ -208,7 +215,7 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
     @Override
     public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
         List<ENTITY> entities = getMongoTemplate().find(Query.query(toCriteria(queryWrapper))
-                        .with(PageRequest.of((int) page.getPageNumber(), (int) page.getPageSize())),
+                        .with(PageRequest.of((int) page.getPageNumber() - 1, (int) page.getPageSize())),
                 entityClass
         );
         Page<ENTITY> objectPage = new Page<>();

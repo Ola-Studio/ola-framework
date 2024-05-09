@@ -21,6 +21,7 @@ import io.ola.crud.inject.ConditionInject;
 import io.ola.crud.inject.ConditionInjector;
 import io.ola.crud.inject.Injector;
 import io.ola.crud.model.*;
+import io.ola.crud.properties.CrudProperties;
 import io.ola.crud.query.annotation.Query;
 import io.ola.crud.rest.BaseQueryAPI;
 import io.ola.crud.rest.BaseRESTAPI;
@@ -53,6 +54,7 @@ public final class CRUD {
 
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
+    private static final CrudProperties CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class);
 
     public static <ENTITY> CrudMeta<ENTITY> getCRUDMeta(Class<?> apiClass) {
         CrudMeta<ENTITY> crudMeta = (CrudMeta<ENTITY>) CRUD_META_MAP.get(apiClass);
@@ -185,7 +187,7 @@ public final class CRUD {
 
         entityMeta.setDeleteTagField(getDeleteTagField(entityClass));
         entityMeta.setSortTagField(getSortField(entityClass));
-        entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(DbType.MYSQL));
+        entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(CRUD_PROPERTIES.getDefaultDbType()));
         entityMeta.setBeforeSaveInjectMetas(getInjectFieldMetas(entityClass, BeforeSave.class));
         entityMeta.setBeforeUpdateInjectMetas(getInjectFieldMetas(entityClass, BeforeUpdate.class));
         return entityMeta;

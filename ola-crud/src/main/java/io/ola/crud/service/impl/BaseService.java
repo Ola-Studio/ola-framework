@@ -4,6 +4,7 @@ import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.ola.crud.CRUD;
+import io.ola.crud.inject.InjectUtils;
 import io.ola.crud.service.CrudService;
 
 import java.io.Serializable;
@@ -54,7 +55,15 @@ public class BaseService<ENTITY> implements CrudService<ENTITY> {
 
     @Override
     public <T extends ENTITY> T save(T entity) {
-        return getProxy().save(entity);
+        beforeSave(entity);
+        if (isNew(entity)) {
+            InjectUtils.doBeforeSaveInject(entity);
+        } else {
+            InjectUtils.doBeforeUpdateInject(entity);
+        }
+        getProxy().save(entity);
+        afterSave(entity);
+        return entity;
     }
 
     @Override

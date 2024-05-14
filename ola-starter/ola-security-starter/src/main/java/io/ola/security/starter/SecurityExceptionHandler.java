@@ -33,4 +33,10 @@ public class SecurityExceptionHandler {
         log.info("【{}】", validateException.getMessage(), validateException);
         return R.error(ResultStatus.BAD_REQUEST.getStatusCode(), validateException.getMessage());
     }
+
+    @ExceptionHandler(value = Exception.class)
+    public R<?> unknownException(Exception exception) {
+        log.info("【{}】", exception.getMessage(), exception);
+        return R.error(ResultStatus.SERVER_ERROR);
+    }
 }

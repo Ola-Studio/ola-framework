@@ -42,6 +42,10 @@ public class R<T> {
         return error(ResultStatus.SERVER_ERROR.getStatusCode(), message);
     }
 
+    public static <T> R<T> error(ResultStatus resultStatus) {
+        return error(resultStatus.getStatusCode(), resultStatus.getText());
+    }
+
     public static <T> R<T> error(Integer code, String message) {
         R<T> responseR = new R<>();
         responseR.setCode(code);

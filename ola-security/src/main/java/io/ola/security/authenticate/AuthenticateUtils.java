@@ -4,6 +4,8 @@ import cn.hutool.core.exceptions.ValidateException;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.validation.BeanValidationResult;
+import cn.hutool.extra.validation.ValidationUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.ola.common.utils.SpringUtils;
@@ -34,6 +36,12 @@ public final class AuthenticateUtils {
         Assert.notBlank(grantType, () -> new ValidateException("The grantType parameter cannot be empty"));
         AuthenticateService<VM> authenticateService = getAuthenticateService(grantType);
         VM authenticateVM = WebUtils.requestDataBind(authenticateService.getModelClass(), request);
+        BeanValidationResult beanValidationResult = ValidationUtil.warpValidate(authenticateVM);
+        Assert.isTrue(beanValidationResult.isSuccess(), () -> new ValidateException(
+                String.join(",", beanValidationResult.getErrorMessages()
+                        .stream().map(BeanValidationResult.ErrorMessage::getMessage)
+                        .toList())
+        ));
         Authentication authenticate = authenticateService.authenticate(authenticateVM);
         authenticate.setGrantType(grantType);
         authenticate.setAuthenticated(true);

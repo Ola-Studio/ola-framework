@@ -33,12 +33,12 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
     }
 
     @PostMapping
-    default <T extends ENTITY> R<T> post(@RequestBody T entity) {
+    default <T extends ENTITY> R<T> post(@RequestBody ENTITY entity) {
         return R.ok(getProxy().doValidateAndSave(entity));
     }
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
-    default <T extends ENTITY> R<T> form(T entity) {
+    default <T extends ENTITY> R<T> form(ENTITY entity) {
         return R.ok(getProxy().doValidateAndSave(entity));
     }
 
@@ -48,14 +48,14 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
         return R.ok();
     }
 
-    default <T extends ENTITY> T doValidateAndSave(T entity) {
+    default <T extends ENTITY> T doValidateAndSave(ENTITY entity) {
         CrudService<ENTITY> service = getCrudService();
         Class<?>[] validateGroups = service.isNew(entity)
                 ? new Class<?>[]{Default.class, Save.class}
                 : new Class<?>[]{Default.class, Module.class};
         BeanValidationResult beanValidationResult = ValidationUtil.warpValidate(entity, validateGroups);
         Assert.isTrue(beanValidationResult.isSuccess());
-        return service.save(entity);
+        return (T) service.save(entity);
     }
 
     /**

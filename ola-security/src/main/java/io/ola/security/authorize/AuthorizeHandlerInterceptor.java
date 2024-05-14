@@ -1,6 +1,7 @@
 package io.ola.security.authorize;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import io.ola.common.utils.SpringUtils;
 import io.ola.common.utils.WebUtils;
@@ -36,9 +37,17 @@ public class AuthorizeHandlerInterceptor implements HandlerInterceptor {
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (securityProperties.getExcludedUris().stream()
-                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, request.getRequestURI()))) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        List<String> securityEndpoints = List.of(securityProperties.getAuthenticateEndpoint(),
+                securityProperties.getLogoutEndpoint(),
+                securityProperties.getVerifyEndpointPrefix()
+        );
+        if (CollUtil.isNotEmpty(securityProperties.getExcludedUris())) {
+            securityEndpoints.addAll(securityProperties.getExcludedUris());
+        }
+        String realUri = request.getRequestURI().replaceAll(request.getContextPath(), "");
+        if (securityEndpoints.stream()
+                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, realUri))) {
             return true;
         }
 

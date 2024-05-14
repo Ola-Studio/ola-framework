@@ -1,9 +1,12 @@
 package io.ola.crud.rest;
 
+import cn.hutool.core.exceptions.ValidateException;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.validation.BeanValidationResult;
 import cn.hutool.extra.validation.ValidationUtil;
 import io.ola.common.http.R;
+import io.ola.common.http.ResultStatus;
 import io.ola.common.utils.SpringUtils;
 import io.ola.crud.CRUD;
 import io.ola.crud.groups.Save;
@@ -54,7 +57,13 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
                 ? new Class<?>[]{Default.class, Save.class}
                 : new Class<?>[]{Default.class, Module.class};
         BeanValidationResult beanValidationResult = ValidationUtil.warpValidate(entity, validateGroups);
-        Assert.isTrue(beanValidationResult.isSuccess());
+        Assert.isTrue(beanValidationResult.isSuccess(), () -> new ValidateException(
+                ResultStatus.BAD_REQUEST.getStatusCode(),
+                StrUtil.join(",", beanValidationResult.getErrorMessages()
+                        .stream()
+                        .map(BeanValidationResult.ErrorMessage::getMessage)
+                        .toList())
+        ));
         return (T) service.save(entity);
     }
 

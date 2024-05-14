@@ -6,7 +6,7 @@ import io.ola.crud.inject.UserIdInjector;
 import io.ola.crud.inject.impl.NowInjector;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author yiuman
@@ -19,8 +19,8 @@ public class BaseAudit {
     @BeforeUpdate(UserIdInjector.class)
     private String lastModifier;
     @BeforeSave(NowInjector.class)
-    private Date createTime;
+    private LocalDateTime createTime;
     @BeforeSave(NowInjector.class)
     @BeforeUpdate(NowInjector.class)
-    private Date updateTime;
+    private LocalDateTime updateTime;
 }

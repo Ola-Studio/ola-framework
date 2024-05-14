@@ -38,16 +38,14 @@ public class AuthorizeHandlerInterceptor implements HandlerInterceptor {
     @SuppressWarnings("NullableProblems")
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        List<String> securityEndpoints = List.of(securityProperties.getAuthenticateEndpoint(),
+        if (isExcludeRequest(CollUtil.newArrayList(securityProperties.getAuthenticateEndpoint(),
                 securityProperties.getLogoutEndpoint(),
-                securityProperties.getVerifyEndpointPrefix()
-        );
-        if (CollUtil.isNotEmpty(securityProperties.getExcludedUris())) {
-            securityEndpoints.addAll(securityProperties.getExcludedUris());
+                securityProperties.getVerifyEndpointPrefix()), request)
+        ) {
+            return true;
         }
-        String realUri = request.getRequestURI().replaceAll(request.getContextPath(), "");
-        if (securityEndpoints.stream()
-                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, realUri))) {
+        if (CollUtil.isNotEmpty(securityProperties.getExcludedUris())
+                && isExcludeRequest(securityProperties.getExcludedUris(), request)) {
             return true;
         }
 
@@ -74,5 +72,11 @@ public class AuthorizeHandlerInterceptor implements HandlerInterceptor {
         }
 
 
+    }
+
+    private boolean isExcludeRequest(List<String> excludedUris, HttpServletRequest request) {
+        String realUri = request.getRequestURI().replaceAll(request.getContextPath(), "");
+        return excludedUris.stream()
+                .anyMatch(uri -> ANT_PATH_MATCHER.match(uri, realUri));
     }
 }

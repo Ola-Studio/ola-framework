@@ -17,6 +17,8 @@ import io.ola.crud.annotation.BeforeUpdate;
 import io.ola.crud.annotation.DeleteTag;
 import io.ola.crud.annotation.Sort;
 import io.ola.crud.enums.DbType;
+import io.ola.crud.groups.Modify;
+import io.ola.crud.groups.Save;
 import io.ola.crud.inject.ConditionInject;
 import io.ola.crud.inject.ConditionInjector;
 import io.ola.crud.inject.Injector;
@@ -29,6 +31,7 @@ import io.ola.crud.service.CrudService;
 import io.ola.crud.service.QueryService;
 import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.crud.service.impl.BaseMongoService;
+import jakarta.validation.groups.Default;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import org.springframework.core.ResolvableType;
@@ -50,11 +53,14 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unchecked")
 public final class CRUD {
+    public static final Class<?>[] SAVE_GROUPS = new Class<?>[]{Default.class, Save.class};
+    public static final Class<?>[] MODIFY_GROUPS = new Class<?>[]{Default.class, Modify.class};
     private static final String ENTITY_DB_TYPE_MAP = "ENTITY_DB_TYPE_MAP";
 
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
     private static final CrudProperties CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class);
+
 
     public static <ENTITY> CrudMeta<ENTITY> getCRUDMeta(Class<?> apiClass) {
         CrudMeta<ENTITY> crudMeta = (CrudMeta<ENTITY>) CRUD_META_MAP.get(apiClass);

@@ -9,9 +9,7 @@ import io.ola.common.http.R;
 import io.ola.common.http.ResultStatus;
 import io.ola.common.utils.SpringUtils;
 import io.ola.crud.CRUD;
-import io.ola.crud.groups.Save;
 import io.ola.crud.service.CrudService;
-import jakarta.validation.groups.Default;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,16 +51,15 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
 
     default <T extends ENTITY> T doValidateAndSave(ENTITY entity) {
         CrudService<ENTITY> service = getCrudService();
-        Class<?>[] validateGroups = service.isNew(entity)
-                ? new Class<?>[]{Default.class, Save.class}
-                : new Class<?>[]{Default.class, Module.class};
+        Class<?>[] validateGroups = service.isNew(entity) ? CRUD.SAVE_GROUPS : CRUD.MODIFY_GROUPS;
         BeanValidationResult beanValidationResult = ValidationUtil.warpValidate(entity, validateGroups);
         Assert.isTrue(beanValidationResult.isSuccess(), () -> new ValidateException(
                 ResultStatus.BAD_REQUEST.getStatusCode(),
                 StrUtil.join(",", beanValidationResult.getErrorMessages()
                         .stream()
                         .map(BeanValidationResult.ErrorMessage::getMessage)
-                        .toList())
+                        .toList()
+                )
         ));
         return (T) service.save(entity);
     }

@@ -54,7 +54,7 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
     public void delete(Serializable id) {
         EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
         Field idField = CollUtil.getFirst(entityMeta.getIdFields());
-        getMongoTemplate().remove(Query.query(Criteria.where(idField.getName()).is(id)));
+        getMongoTemplate().remove(Query.query(Criteria.where(idField.getName()).is(id)), entityClass);
     }
 
     @Override
@@ -132,12 +132,37 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
         beforeSave(entity);
         if (isNew(entity)) {
             InjectUtils.doBeforeSaveInject(entity);
+            getMongoTemplate().save(entity);
         } else {
             InjectUtils.doBeforeUpdateInject(entity);
+            update(entity);
         }
-        getMongoTemplate().save(entity);
+
         afterSave(entity);
         return entity;
+    }
+
+    /**
+     * 仅更新不为null的字段
+     *
+     * @param entity 实体
+     */
+    public void update(ENTITY entity) {
+        EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
+        Field idField = CollUtil.getFirst(entityMeta.getIdFields());
+        Update update = new Update();
+        for (Field field : entityMeta.getAllFields()) {
+            Object fieldValue = ReflectUtil.getFieldValue(entity, field);
+            if (Objects.nonNull(fieldValue)) {
+                update.set(field.getName(), fieldValue);
+            }
+        }
+        getMongoTemplate().updateFirst(
+                Query.query(Criteria.where(idField.getName())
+                        .is(ReflectUtil.getFieldValue(entity, idField))),
+                update,
+                entityClass
+        );
     }
 
     @Override

@@ -185,6 +185,7 @@ public final class CRUD {
     private static <ENTITY> EntityMeta<ENTITY> initEntityMeta(Class<ENTITY> entityClass) {
         EntityMeta<ENTITY> entityMeta = new EntityMeta<>();
         entityMeta.setEntityClass(entityClass);
+        entityMeta.setAllFields(Arrays.stream(ReflectUtil.getFields(entityClass)).toList());
         TableInfo tableInfo = TableInfoFactory.ofEntityClass(entityClass);
         if (Objects.nonNull(tableInfo)) {
             List<Field> idFields = tableInfo.getPrimaryKeyList().stream()

@@ -42,7 +42,7 @@ public interface BaseQueryAPI<ENTITY> {
     }
 
     @GetMapping("/{id}")
-    default R<ENTITY> get(@PathVariable Serializable id) {
+    default R<ENTITY> get(@PathVariable("id") Serializable id) {
         return R.ok(getQueryService().get(id));
     }
 

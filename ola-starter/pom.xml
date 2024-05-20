@@ -11,6 +11,9 @@
 
     <artifactId>ola-starter</artifactId>
     <packaging>pom</packaging>
+    <modules>
+        <module>ola-default-bean-config</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

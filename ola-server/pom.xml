@@ -28,6 +28,11 @@
             <artifactId>ola-security-starter</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>io.autoflow</groupId>
+            <artifactId>ola-default-bean-config</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.ola</groupId>

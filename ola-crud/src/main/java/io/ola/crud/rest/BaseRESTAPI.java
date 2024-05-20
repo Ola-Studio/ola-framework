@@ -44,7 +44,7 @@ public interface BaseRESTAPI<ENTITY> extends BaseQueryAPI<ENTITY> {
     }
 
     @DeleteMapping("/{id}")
-    default R<Void> delete(@PathVariable Serializable id) {
+    default R<Void> delete(@PathVariable("id") Serializable id) {
         getCrudService().delete(id);
         return R.ok();
     }

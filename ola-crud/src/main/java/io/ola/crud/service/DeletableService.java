@@ -14,11 +14,11 @@ public interface DeletableService<ENTITY> {
     default void beforeDelete(ENTITY entity) {
     }
 
-    void delete(Serializable id);
+    <ID extends Serializable> void delete(ID id);
 
     void delete(ENTITY entity);
 
-    void deleteByIds(Iterable<Serializable> ids);
+    <ID extends Serializable> void deleteByIds(Iterable<ID> ids);
 
     void deleteByQuery(QueryWrapper queryWrapper);
 }

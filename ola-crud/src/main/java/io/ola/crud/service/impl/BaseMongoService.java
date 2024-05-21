@@ -1,6 +1,7 @@
 package io.ola.crud.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
@@ -72,7 +73,7 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public void deleteByIds(Iterable<Serializable> ids) {
+    public <ID extends Serializable> void deleteByIds(Iterable<ID> ids) {
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
@@ -106,18 +107,28 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
             }
         } else {
             criteria = Criteria.where(whereQueryCondition.getColumn().getName());
+            Object conditionValue = whereQueryCondition.getValue();
             switch (whereQueryCondition.getLogic()) {
-                case SqlConsts.GT -> criteria.gt(whereQueryCondition.getValue());
-                case SqlConsts.GE -> criteria.gte(whereQueryCondition.getValue());
-                case SqlConsts.LT -> criteria.lt(whereQueryCondition.getValue());
-                case SqlConsts.LE -> criteria.lte(whereQueryCondition.getValue());
+                case SqlConsts.IN -> {
+                    if (ArrayUtil.isArray(conditionValue)) {
+                        criteria.in(((Object[]) conditionValue));
+                    } else if (conditionValue instanceof Collection<?>) {
+                        criteria.in((Collection<?>) conditionValue);
+                    } else {
+                        criteria.in(conditionValue);
+                    }
+                }
+                case SqlConsts.GT -> criteria.gt(conditionValue);
+                case SqlConsts.GE -> criteria.gte(conditionValue);
+                case SqlConsts.LT -> criteria.lt(conditionValue);
+                case SqlConsts.LE -> criteria.lte(conditionValue);
                 case SqlConsts.LIKE -> {
-                    String value = StrUtil.toString(whereQueryCondition.getValue());
+                    String value = StrUtil.toString(conditionValue);
                     value = StrUtil.replaceFirst(value, "%", "");
                     value = StrUtil.replaceLast(value, "%", "");
                     criteria.regex(value, "i");
                 }
-                default -> criteria.is(whereQueryCondition.getValue());
+                default -> criteria.is(conditionValue);
             }
         }
         return criteria;
@@ -208,38 +219,38 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public ENTITY get(Serializable id) {
-        return getMongoTemplate().findById(id, entityClass);
+    public <T extends ENTITY, ID extends Serializable> T get(ID id) {
+        return (T) getMongoTemplate().findById(id, entityClass);
     }
 
     @Override
-    public ENTITY get(QueryWrapper queryWrapper) {
-        return getMongoTemplate().findOne(Query.query(toCriteria(queryWrapper)), entityClass);
+    public <T extends ENTITY> T get(QueryWrapper queryWrapper) {
+        return (T) getMongoTemplate().findOne(Query.query(toCriteria(queryWrapper)), entityClass);
     }
 
     @Override
-    public List<ENTITY> list() {
+    public <T extends ENTITY> List<T> list() {
         return list(QueryWrapper.create());
     }
 
     @Override
-    public List<ENTITY> list(Iterable<Serializable> ids) {
+    public <T extends ENTITY, ID extends Serializable> List<T> list(Iterable<ID> ids) {
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
         EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
         List<Field> idFields = entityMeta.getIdFields();
         Field idField = CollUtil.getFirst(idFields);
-        return getMongoTemplate().find(Query.query(Criteria.where(idField.getName()).in(idSet)), entityClass);
+        return (List<T>) getMongoTemplate().find(Query.query(Criteria.where(idField.getName()).in(idSet)), entityClass);
     }
 
     @Override
-    public List<ENTITY> list(QueryWrapper queryWrapper) {
-        return getMongoTemplate().find(Query.query(toCriteria(queryWrapper)), entityClass);
+    public <T extends ENTITY> List<T> list(QueryWrapper queryWrapper) {
+        return (List<T>) getMongoTemplate().find(Query.query(toCriteria(queryWrapper)), entityClass);
     }
 
     @Override
-    public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
+    public <T extends ENTITY> Page<T> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
         List<ENTITY> entities = getMongoTemplate().find(Query.query(toCriteria(queryWrapper))
                         .with(PageRequest.of((int) page.getPageNumber() - 1, (int) page.getPageSize())),
                 entityClass
@@ -249,7 +260,7 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
         objectPage.setPageSize(page.getPageSize());
         objectPage.setTotalRow(count(queryWrapper));
         objectPage.setRecords(entities);
-        return objectPage;
+        return (Page<T>) objectPage;
     }
 
     @Override

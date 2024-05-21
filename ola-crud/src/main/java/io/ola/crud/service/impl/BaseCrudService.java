@@ -45,7 +45,7 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public void delete(Serializable id) {
+    public <ID extends Serializable> void delete(ID id) {
         getDao().deleteById(id);
     }
 
@@ -64,7 +64,7 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public void deleteByIds(Iterable<Serializable> ids) {
+    public <ID extends Serializable> void deleteByIds(Iterable<ID> ids) {
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
@@ -117,36 +117,36 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public ENTITY get(Serializable id) {
-        return getDao().selectOneWithRelationsById(id);
+    public <T extends ENTITY, ID extends Serializable> T get(ID id) {
+        return (T) getDao().selectOneWithRelationsById(id);
     }
 
     @Override
-    public ENTITY get(QueryWrapper queryWrapper) {
-        return getDao().selectOneByQuery(queryWrapper);
+    public <T extends ENTITY> T get(QueryWrapper queryWrapper) {
+        return (T) getDao().selectOneByQuery(queryWrapper);
     }
 
     @Override
-    public List<ENTITY> list() {
+    public <T extends ENTITY> List<T> list() {
         return list(QueryWrapper.create());
     }
 
     @Override
-    public List<ENTITY> list(Iterable<Serializable> ids) {
+    public <T extends ENTITY, ID extends Serializable> List<T> list(Iterable<ID> ids) {
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());
-        return getDao().selectListByIds(idSet);
+        return (List<T>) getDao().selectListByIds(idSet);
     }
 
     @Override
-    public List<ENTITY> list(QueryWrapper queryWrapper) {
-        return getDao().selectListWithRelationsByQuery(queryWrapper);
+    public <T extends ENTITY> List<T> list(QueryWrapper queryWrapper) {
+        return (List<T>) getDao().selectListWithRelationsByQuery(queryWrapper);
     }
 
     @Override
-    public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
-        return getDao().paginateWithRelations(page, queryWrapper);
+    public <T extends ENTITY> Page<T> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
+        return (Page<T>) getDao().paginateWithRelations(page, queryWrapper);
     }
 
     @Override

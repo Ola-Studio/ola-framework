@@ -73,9 +73,7 @@ public class QueryFieldMeta {
 
 
         if (StrUtil.isBlank(mapping)) {
-            this.mapping = com.mybatisflex.processor.util.StrUtil.camelToUnderline(
-                    field.getName()
-            );
+            this.mapping = field.getName();
         }
         this.queryColumn = new QueryColumn(this.mapping);
         if (!ConditionHandler.class.equals(queryField.handler())) {

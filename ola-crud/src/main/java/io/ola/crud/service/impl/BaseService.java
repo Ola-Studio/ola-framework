@@ -29,7 +29,7 @@ public class BaseService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public void delete(Serializable id) {
+    public <ID extends Serializable> void delete(ID id) {
         getProxy().delete(id);
     }
 
@@ -39,7 +39,7 @@ public class BaseService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public void deleteByIds(Iterable<Serializable> ids) {
+    public <ID extends Serializable> void deleteByIds(Iterable<ID> ids) {
         getProxy().deleteByIds(ids);
     }
 
@@ -72,32 +72,32 @@ public class BaseService<ENTITY> implements CrudService<ENTITY> {
     }
 
     @Override
-    public ENTITY get(Serializable id) {
+    public <T extends ENTITY, ID extends Serializable> T get(ID id) {
         return getProxy().get(id);
     }
 
     @Override
-    public ENTITY get(QueryWrapper queryWrapper) {
+    public <T extends ENTITY> T get(QueryWrapper queryWrapper) {
         return getProxy().get(queryWrapper);
     }
 
     @Override
-    public List<ENTITY> list() {
+    public <T extends ENTITY> List<T> list() {
         return list(QueryWrapper.create());
     }
 
     @Override
-    public List<ENTITY> list(Iterable<Serializable> ids) {
+    public <T extends ENTITY, ID extends Serializable> List<T> list(Iterable<ID> ids) {
         return getProxy().list(ids);
     }
 
     @Override
-    public List<ENTITY> list(QueryWrapper queryWrapper) {
+    public <T extends ENTITY> List<T> list(QueryWrapper queryWrapper) {
         return getProxy().list(queryWrapper);
     }
 
     @Override
-    public Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
+    public <T extends ENTITY> Page<T> page(Page<ENTITY> page, QueryWrapper queryWrapper) {
         return getProxy().page(page, queryWrapper);
     }
 

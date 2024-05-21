@@ -15,17 +15,17 @@ public interface QueryService<ENTITY> {
 
     <ID extends Serializable> ID getId(ENTITY entity);
 
-    ENTITY get(Serializable id);
+    <T extends ENTITY, ID extends Serializable> T get(ID id);
 
-    ENTITY get(QueryWrapper queryWrapper);
+    <T extends ENTITY> T get(QueryWrapper queryWrapper);
 
-    List<ENTITY> list();
+    <T extends ENTITY> List<T> list();
 
-    List<ENTITY> list(Iterable<Serializable> ids);
+    <T extends ENTITY, ID extends Serializable> List<T> list(Iterable<ID> ids);
 
-    List<ENTITY> list(QueryWrapper queryWrapper);
+    <T extends ENTITY> List<T> list(QueryWrapper queryWrapper);
 
-    Page<ENTITY> page(Page<ENTITY> page, QueryWrapper queryWrapper);
+    <T extends ENTITY> Page<T> page(Page<ENTITY> page, QueryWrapper queryWrapper);
 
     long count(QueryWrapper queryWrapper);
 }

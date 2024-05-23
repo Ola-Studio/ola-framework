@@ -250,23 +250,19 @@ public final class CRUD {
 
     public static <ID extends Serializable, ENTITY> ID getId(ENTITY entity) {
         EntityMeta<ENTITY> entityMeta = (EntityMeta<ENTITY>) CRUD.getEntityMeta(entity.getClass());
-        try {
-            List<Field> idFields = entityMeta.getIdFields();
-            if (CollUtil.size(idFields) > 1) {
-                return (ID) IDs.builder()
-                        .ids(
-                                idFields.stream()
-                                        .map(field -> new FieldValue(field, ReflectUtil.getFieldValue(entity, field)))
-                                        .collect(Collectors.toList())
-                        )
-                        .build();
-            } else {
-                return (ID) CollUtil.getFirst(idFields).get(entity);
-            }
-
-        } catch (IllegalAccessException illegalAccessException) {
-            throw new RuntimeException("CRUD get entity id happen exception", illegalAccessException);
+        List<Field> idFields = entityMeta.getIdFields();
+        if (CollUtil.size(idFields) > 1) {
+            return (ID) IDs.builder()
+                    .ids(
+                            idFields.stream()
+                                    .map(field -> new FieldValue(field, ReflectUtil.getFieldValue(entity, field)))
+                                    .collect(Collectors.toList())
+                    )
+                    .build();
+        } else {
+            return (ID) ReflectUtil.getFieldValue(entity, CollUtil.getFirst(idFields));
         }
+
     }
 
     public static synchronized <ENTITY, SERVICE extends CrudService<ENTITY>> Class<SERVICE> makeServiceClass(

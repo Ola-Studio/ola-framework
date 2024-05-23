@@ -176,6 +176,20 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
         );
     }
 
+    private <T extends ENTITY> List<Serializable> findExistsIds(Iterable<T> entities) {
+        List<Serializable> ids = CollUtil.toCollection(entities)
+                .stream()
+                .map(entity -> (Serializable) getId(entity))
+                .filter(Objects::nonNull)
+                .toList();
+
+        return CollUtil.isEmpty(ids)
+                ? CollUtil.newArrayList()
+                : list(ids).stream()
+                .map(entity -> (Serializable) getId(entity)).toList();
+
+    }
+
     @Override
     public <T extends ENTITY> Iterable<T> saveAll(Iterable<T> entities) {
         if (CollUtil.isEmpty(entities)) {
@@ -183,13 +197,14 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
         }
         List<T> updates = new ArrayList<>();
         List<T> inserts = new ArrayList<>();
+        List<Serializable> existsIds = findExistsIds(entities);
         for (T entity : entities) {
-            if (isNew(entity)) {
-                InjectUtils.doBeforeSaveInject(entity);
-                inserts.add(entity);
-            } else {
+            if (!isNew(entity) && existsIds.contains(getId(entity))) {
                 InjectUtils.doBeforeUpdateInject(entity);
                 updates.add(entity);
+            } else {
+                InjectUtils.doBeforeSaveInject(entity);
+                inserts.add(entity);
             }
         }
 

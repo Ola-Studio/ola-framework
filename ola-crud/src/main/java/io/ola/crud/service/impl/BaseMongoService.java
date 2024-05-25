@@ -217,14 +217,22 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
             EntityMeta<ENTITY> entityMeta = CRUD.getEntityMeta(entityClass);
             Map<Field, ColumnInfo> fieldColumnInfoMap = entityMeta.getFieldColumnInfoMap();
             Field idField = CollUtil.getFirst(entityMeta.getIdFields());
+            List<Field> allFields = entityMeta.getAllFields();
             updates.forEach(updateEntity -> {
                 Update update = new Update();
-                for (Map.Entry<Field, ColumnInfo> fieldColumnInfoEntry : fieldColumnInfoMap.entrySet()) {
-                    Field field = fieldColumnInfoEntry.getKey();
-                    ColumnInfo value = fieldColumnInfoEntry.getValue();
-                    update.set(value.getColumn(), ReflectUtil.getFieldValue(updateEntity, field));
-                }
+                for (Field field : allFields) {
+                    if (Objects.isNull(field)) {
+                        continue;
+                    }
+                    ColumnInfo columnInfo = fieldColumnInfoMap.get(field);
+                    Object fieldValue = ReflectUtil.getFieldValue(updateEntity, field);
+                    if (Objects.nonNull(columnInfo)) {
+                        update.set(columnInfo.getColumn(), fieldValue);
+                    } else {
+                        update.set(field.getName(), fieldValue);
+                    }
 
+                }
                 bulkOperations.updateOne(Query.query(Criteria.where(idField.getName())
                         .is(ReflectUtil.getFieldValue(updateEntity, idField))), update);
             });

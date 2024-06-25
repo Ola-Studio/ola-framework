@@ -8,6 +8,7 @@ import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.constant.SqlConnector;
 import com.mybatisflex.core.constant.SqlConsts;
 import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.Brackets;
 import com.mybatisflex.core.query.CPI;
 import com.mybatisflex.core.query.QueryCondition;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -107,7 +108,13 @@ public abstract class BaseMongoService<ENTITY> implements CrudService<ENTITY> {
             }
         } else {
             criteria = Criteria.where(whereQueryCondition.getColumn().getName());
-            Object conditionValue = whereQueryCondition.getValue();
+            Object conditionValue;
+            if (whereQueryCondition instanceof Brackets) {
+                conditionValue = ((Brackets) whereQueryCondition).getChildCondition().getValue();
+            } else {
+                conditionValue = whereQueryCondition.getValue();
+            }
+
             switch (whereQueryCondition.getLogic()) {
                 case SqlConsts.IN -> {
                     if (ArrayUtil.isArray(conditionValue)) {

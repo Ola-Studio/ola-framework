@@ -16,6 +16,11 @@ public class LikeConditionHandler implements ConditionHandler {
 
     @Override
     public Consumer<QueryWrapper> handle(QueryFieldMeta queryFieldMeta, Object conditionValue) {
+        if (StrUtil.isBlank(StrUtil.toString(conditionValue))) {
+            return queryWrapper -> {
+            };
+        }
+
         return DefaultConditionHandler.INSTANCE.handle(queryFieldMeta, StrUtil.format("%{}%", conditionValue));
     }
 }

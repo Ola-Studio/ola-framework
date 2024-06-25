@@ -57,7 +57,7 @@ public final class QueryHelper {
                 queryWrapperConsumer = DEFAULT_CONDITION_HANDLER.handle(queryFieldMeta, fieldValue);
             }
             if (Clauses.AND == clauses) {
-                queryWrapperConsumer.accept(wrapper);
+                wrapper.and(queryWrapperConsumer);
             } else {
                 wrapper.or(queryWrapperConsumer, require);
             }

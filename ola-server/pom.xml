@@ -29,8 +29,8 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>io.autoflow</groupId>
-            <artifactId>ola-default-bean-config</artifactId>
+            <groupId>io.ola</groupId>
+            <artifactId>ola-default-config</artifactId>
             <version>${revision}</version>
         </dependency>
 

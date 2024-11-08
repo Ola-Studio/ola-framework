@@ -9,8 +9,8 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>io.autoflow</groupId>
-    <artifactId>ola-default-bean-config</artifactId>
+    <groupId>io.ola</groupId>
+    <artifactId>ola-default-config</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

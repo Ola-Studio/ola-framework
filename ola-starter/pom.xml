@@ -12,7 +12,7 @@
     <artifactId>ola-starter</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>ola-default-bean-config</module>
+        <module>ola-default-config</module>
     </modules>
 
     <properties>

@@ -1,4 +1,4 @@
-package io.ola.defaultbean.config;
+package io.ola.defaultconfig;
 
 import io.ola.crud.serializer.EpochToLocalDateTimeDeserializer;
 import io.ola.crud.serializer.LocalDateTimeToEpochSerializer;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * @date 2024/5/20
  */
 @Configuration
-public class OlaDefaultBeanConfiguration {
+public class OlaDefaultConfiguration {
     @Bean
     @ConditionalOnBean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {

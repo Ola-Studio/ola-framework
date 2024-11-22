@@ -6,7 +6,6 @@ import io.ola.rbac.service.RoleService;
 import io.ola.rbac.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
@@ -15,7 +14,6 @@ import java.util.Objects;
  * @author yiuman
  * @date 2023/8/15
  */
-@Component
 @RequiredArgsConstructor
 public class CreateAdminUserRunner implements CommandLineRunner {
     private static final String ADMIN = "admin";

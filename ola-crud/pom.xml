@@ -45,6 +45,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
         <!-- 添加已适配 springboot 3 的 mybatis-spring 依赖-->
         <dependency>
             <groupId>org.mybatis</groupId>

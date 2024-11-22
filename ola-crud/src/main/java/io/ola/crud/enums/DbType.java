@@ -6,6 +6,7 @@ package io.ola.crud.enums;
  */
 public enum DbType {
     MYSQL,
+    POSTGRESQL,
     ORACLE,
     MONGODB
 }

@@ -1,5 +1,6 @@
 package io.ola.crud.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.mybatisflex.core.BaseMapper;
@@ -102,18 +103,26 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
 
     @Override
     public <T extends ENTITY> Iterable<T> saveAll(Iterable<T> entities) {
+        List<ENTITY> inserts = new ArrayList<>();
+        List<ENTITY> updates = new ArrayList<>();
         for (T entity : entities) {
             if (isNew(entity)) {
                 InjectUtils.doBeforeSaveInject(entity);
+                inserts.add(entity);
             } else {
                 InjectUtils.doBeforeUpdateInject(entity);
+                updates.add(entity);
             }
         }
-        List<T> entityList = StreamSupport
-                .stream(entities.spliterator(), false)
+        if (CollUtil.isNotEmpty(inserts)) {
+            getDao().insertBatch(inserts);
+        }
+
+        if (CollUtil.isNotEmpty(updates)) {
+            saveBatch(updates, DEFAULT_BATCH_SIZE);
+        }
+        return StreamSupport.stream(entities.spliterator(), true)
                 .collect(Collectors.toList());
-        saveBatch(entityList, DEFAULT_BATCH_SIZE);
-        return entityList;
     }
 
     @Override
@@ -133,6 +142,9 @@ public abstract class BaseCrudService<ENTITY> implements CrudService<ENTITY> {
 
     @Override
     public <T extends ENTITY, ID extends Serializable> List<T> list(Iterable<ID> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return CollUtil.newArrayList();
+        }
         Set<Serializable> idSet = StreamSupport
                 .stream(ids.spliterator(), false)
                 .collect(Collectors.toSet());

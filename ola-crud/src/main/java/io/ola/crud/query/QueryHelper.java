@@ -100,7 +100,6 @@ public final class QueryHelper {
             return null;
         }
         List<QueryFieldMeta> queryFieldMetas = new ArrayList<>();
-
         for (QueryField queryField : allMergedAnnotations) {
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(queryField);
             try {
@@ -111,9 +110,11 @@ public final class QueryHelper {
                 FieldColumnInfo columnInfo = null;
                 if (Objects.nonNull(entityClass)) {
                     EntityMeta<?> entityMeta = CRUD.getEntityMeta(entityClass);
-                    columnInfo = CollUtil.findOne(entityMeta.getFieldColumnInfos(),
+                    columnInfo = CollUtil.findOne(
+                            entityMeta.getFieldColumnInfos(),
                             columnInfoItem -> Objects.equals(field.getName(), columnInfoItem.getColumnInfo().getColumn())
                                     || Objects.equals(queryField.mapping(), columnInfoItem.getColumnInfo().getColumn())
+                                    || Objects.equals(field.getName(), columnInfoItem.getField().getName())
                     );
 
                 }

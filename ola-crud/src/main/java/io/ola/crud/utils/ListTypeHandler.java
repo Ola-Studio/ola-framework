@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author yiuman
@@ -22,10 +23,15 @@ public class ListTypeHandler extends org.apache.ibatis.type.ArrayTypeHandler {
             ps.setArray(i, (Array) parameter);
         } else if (parameter instanceof Collection<?> collection) {
             Object first = CollUtil.getFirst(collection);
-            String arrayTypeName = resolveTypeName(first.getClass());
-            Array array = ps.getConnection().createArrayOf(arrayTypeName, collection.toArray());
-            ps.setArray(i, array);
-            array.free();
+            if (Objects.isNull(first)) {
+                ps.setArray(i, null);
+            } else {
+                String arrayTypeName = resolveTypeName(first.getClass());
+                Array array = ps.getConnection().createArrayOf(arrayTypeName, collection.toArray());
+                ps.setArray(i, array);
+                array.free();
+            }
+
         } else {
             if (!parameter.getClass().isArray()) {
                 throw new TypeException(

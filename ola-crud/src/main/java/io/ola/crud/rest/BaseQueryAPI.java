@@ -33,12 +33,12 @@ public interface BaseQueryAPI<ENTITY> {
     default <T extends ENTITY> R<Page<T>> page(HttpServletRequest request) {
         cn.hutool.db.Page pageRequest = WebUtils.getPageRequest();
         Page<ENTITY> mfPage = Page.of(pageRequest.getPageNumber(), pageRequest.getPageSize());
-        return R.ok((Page<T>) getQueryService().page(mfPage, buildWrapper(request)));
+        return R.ok(getQueryService().page(mfPage, buildWrapper(request)));
     }
 
     @GetMapping("/list")
     default <T extends ENTITY> R<List<T>> list(HttpServletRequest request) {
-        return R.ok((List<T>) getQueryService().list(buildWrapper(request)));
+        return R.ok(getQueryService().list(buildWrapper(request)));
     }
 
     @GetMapping("/{id}")
@@ -60,7 +60,7 @@ public interface BaseQueryAPI<ENTITY> {
             queryWrapper = QueryWrapper.create();
         } else {
             Object queryObject = getQueryObject(request, queryClass);
-            queryWrapper = QueryHelper.build(queryObject);
+            queryWrapper = QueryHelper.build(queryObject, crudMeta.getEntityClass());
         }
 
         ConditionInjector conditionInjector = crudMeta.getConditionInjector();

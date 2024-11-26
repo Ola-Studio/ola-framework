@@ -5,7 +5,10 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.ola.common.utils.SpringUtils;
+import io.ola.crud.CRUD;
 import io.ola.crud.enums.Clauses;
+import io.ola.crud.model.EntityMeta;
+import io.ola.crud.model.FieldColumnInfo;
 import io.ola.crud.model.QueryFieldMeta;
 import io.ola.crud.query.annotation.QueryField;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -32,11 +35,15 @@ public final class QueryHelper {
     }
 
     public static QueryWrapper build(Object any) {
+        return build(any, null);
+    }
+
+    public static QueryWrapper build(Object any, Class<?> queryTargetClass) {
         if (Objects.isNull(any)) {
             return QueryWrapper.create();
         }
         Class<?> objectClass = any.getClass();
-        List<QueryFieldMeta> queryFieldMetas = getQueryFieldMetas(objectClass);
+        List<QueryFieldMeta> queryFieldMetas = getQueryFieldMetas(objectClass, queryTargetClass);
         if (CollUtil.isEmpty(queryFieldMetas)) {
             return QueryWrapper.create();
         }
@@ -66,7 +73,7 @@ public final class QueryHelper {
         return wrapper;
     }
 
-    public static List<QueryFieldMeta> getQueryFieldMetas(Class<?> queryClass) {
+    public static List<QueryFieldMeta> getQueryFieldMetas(Class<?> queryClass, Class<?> entityClass) {
         synchronized (queryClass) {
             List<QueryFieldMeta> queryFieldMetas = CLASS_QUERY_FIELD_META_MAP.get(queryClass);
             if (Objects.nonNull(queryFieldMetas)) {
@@ -76,7 +83,7 @@ public final class QueryHelper {
             Field[] fieldsDirectly = ReflectUtil.getFieldsDirectly(queryClass, true);
             for (Field field : fieldsDirectly) {
                 field.setAccessible(true);
-                List<QueryFieldMeta> queryParamMeta = getQueryFieldMetas(queryClass, field);
+                List<QueryFieldMeta> queryParamMeta = getQueryFieldMetas(queryClass, field, entityClass);
                 if (CollUtil.isNotEmpty(queryParamMeta)) {
                     queryFieldMetas.addAll(queryParamMeta);
                 }
@@ -87,12 +94,13 @@ public final class QueryHelper {
 
     }
 
-    private static List<QueryFieldMeta> getQueryFieldMetas(Class<?> queryClass, Field field) {
+    private static List<QueryFieldMeta> getQueryFieldMetas(Class<?> queryClass, Field field, Class<?> entityClass) {
         Set<QueryField> allMergedAnnotations = AnnotatedElementUtils.getAllMergedAnnotations(field, QueryField.class);
         if (CollUtil.isEmpty(allMergedAnnotations)) {
             return null;
         }
         List<QueryFieldMeta> queryFieldMetas = new ArrayList<>();
+
         for (QueryField queryField : allMergedAnnotations) {
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(queryField);
             try {
@@ -100,13 +108,21 @@ public final class QueryHelper {
                 source.setAccessible(true);
                 MergedAnnotation<?> mergedAnnotation = (MergedAnnotation<?>) source.get(invocationHandler);
                 Annotation sourceAnnotation = mergedAnnotation.getRoot().synthesize();
-                queryFieldMetas.add(
-                        new QueryFieldMeta(queryClass, field, queryField, sourceAnnotation)
-                );
+                FieldColumnInfo columnInfo = null;
+                if (Objects.nonNull(entityClass)) {
+                    EntityMeta<?> entityMeta = CRUD.getEntityMeta(entityClass);
+                    columnInfo = CollUtil.findOne(entityMeta.getFieldColumnInfos(),
+                            columnInfoItem -> Objects.equals(field.getName(), columnInfoItem.getColumnInfo().getColumn())
+                                    || Objects.equals(queryField.mapping(), columnInfoItem.getColumnInfo().getColumn())
+                    );
+
+                }
+                queryFieldMetas.add(new QueryFieldMeta(queryClass, field, queryField, sourceAnnotation, columnInfo));
             } catch (IllegalAccessException | NoSuchFieldException ignore) {
             }
 
         }
         return queryFieldMetas;
     }
+
 }

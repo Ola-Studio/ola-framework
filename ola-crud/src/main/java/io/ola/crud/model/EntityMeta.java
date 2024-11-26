@@ -1,5 +1,6 @@
 package io.ola.crud.model;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.mybatisflex.core.table.ColumnInfo;
@@ -11,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,12 +37,35 @@ public class EntityMeta<ENTITY> {
     private List<InjectFieldMeta> beforeUpdateInjectMetas;
     private Field deleteTagField;
     private Field sortTagField;
+    private List<ColumnInfo> columnInfos;
+    private List<FieldColumnInfo> fieldColumnInfos;
     private Map<Field, ColumnInfo> fieldColumnInfoMap;
     private Map<String, ColumnInfo> fieldNameColumnInfoMap;
     private DbType dbType;
 
     public TableInfo getTableInfo() {
         return TableInfoFactory.ofEntityClass(entityClass);
+    }
+
+    public List<ColumnInfo> getColumnInfos() {
+        if (CollUtil.isEmpty(columnInfos)) {
+            columnInfos = new ArrayList<>(getTableInfo().getPrimaryKeyList());
+            columnInfos.addAll(getTableInfo().getColumnInfoList());
+        }
+        return columnInfos;
+    }
+
+    public List<FieldColumnInfo> getFieldColumnInfos() {
+        if (CollUtil.isEmpty(fieldColumnInfos)) {
+            fieldColumnInfos = getColumnInfos().stream().map(columnInfo -> {
+                Field columnInfoField = getColumnInfoField(columnInfo);
+                return new FieldColumnInfo(
+                        columnInfoField,
+                        columnInfo
+                );
+            }).toList();
+        }
+        return fieldColumnInfos;
     }
 
     public Map<Field, ColumnInfo> getFieldColumnInfoMap() {

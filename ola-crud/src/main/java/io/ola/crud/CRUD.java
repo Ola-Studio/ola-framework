@@ -34,6 +34,7 @@ import io.ola.crud.service.impl.BaseMongoService;
 import jakarta.validation.groups.Default;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.apache.ibatis.type.JdbcType;
 import org.springframework.core.ResolvableType;
 
 import java.io.Serializable;
@@ -41,6 +42,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URL;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -60,6 +67,44 @@ public final class CRUD {
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
     private static final CrudProperties CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class);
+
+    private static final ConcurrentHashMap<Class<?>, String> STANDARD_MAPPING;
+
+    static {
+        STANDARD_MAPPING = new ConcurrentHashMap<>();
+        STANDARD_MAPPING.put(BigDecimal.class, JdbcType.NUMERIC.name());
+        STANDARD_MAPPING.put(BigInteger.class, JdbcType.BIGINT.name());
+        STANDARD_MAPPING.put(boolean.class, JdbcType.BOOLEAN.name());
+        STANDARD_MAPPING.put(Boolean.class, JdbcType.BOOLEAN.name());
+        STANDARD_MAPPING.put(byte[].class, JdbcType.VARBINARY.name());
+        STANDARD_MAPPING.put(byte.class, JdbcType.TINYINT.name());
+        STANDARD_MAPPING.put(Byte.class, JdbcType.TINYINT.name());
+        STANDARD_MAPPING.put(Calendar.class, JdbcType.TIMESTAMP.name());
+        STANDARD_MAPPING.put(java.sql.Date.class, JdbcType.DATE.name());
+        STANDARD_MAPPING.put(java.util.Date.class, JdbcType.TIMESTAMP.name());
+        STANDARD_MAPPING.put(double.class, JdbcType.DOUBLE.name());
+        STANDARD_MAPPING.put(Double.class, JdbcType.DOUBLE.name());
+        STANDARD_MAPPING.put(float.class, JdbcType.REAL.name());
+        STANDARD_MAPPING.put(Float.class, JdbcType.REAL.name());
+        STANDARD_MAPPING.put(int.class, JdbcType.INTEGER.name());
+        STANDARD_MAPPING.put(Integer.class, JdbcType.INTEGER.name());
+        STANDARD_MAPPING.put(LocalDate.class, JdbcType.DATE.name());
+        STANDARD_MAPPING.put(LocalDateTime.class, JdbcType.TIMESTAMP.name());
+        STANDARD_MAPPING.put(LocalTime.class, JdbcType.TIME.name());
+        STANDARD_MAPPING.put(long.class, JdbcType.BIGINT.name());
+        STANDARD_MAPPING.put(Long.class, JdbcType.BIGINT.name());
+        STANDARD_MAPPING.put(OffsetDateTime.class, JdbcType.TIMESTAMP_WITH_TIMEZONE.name());
+        STANDARD_MAPPING.put(OffsetTime.class, JdbcType.TIME_WITH_TIMEZONE.name());
+        STANDARD_MAPPING.put(Short.class, JdbcType.SMALLINT.name());
+        STANDARD_MAPPING.put(String.class, JdbcType.VARCHAR.name());
+        STANDARD_MAPPING.put(Time.class, JdbcType.TIME.name());
+        STANDARD_MAPPING.put(Timestamp.class, JdbcType.TIMESTAMP.name());
+        STANDARD_MAPPING.put(URL.class, JdbcType.DATALINK.name());
+    }
+
+    public static String resolveJDBCType(Class<?> clazz) {
+        return STANDARD_MAPPING.getOrDefault(clazz, JdbcType.VARCHAR.name());
+    }
 
 
     public static <ENTITY> CrudMeta<ENTITY> getCRUDMeta(Class<?> apiClass) {

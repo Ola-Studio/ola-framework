@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 查询字段你的元数据
@@ -58,20 +59,27 @@ public class QueryFieldMeta {
      */
     private List<QueryFieldMeta> nested;
 
+    private FieldColumnInfo columnInfo;
+
     private Class<? extends ConditionHandler> handleClass;
 
     private QueryColumn queryColumn;
 
-    public QueryFieldMeta(Class<?> objectClass, Field field, QueryField queryField, Annotation sourceAnnotation) {
+    public QueryFieldMeta(Class<?> objectClass,
+                          Field field,
+                          QueryField queryField,
+                          Annotation sourceAnnotation,
+                          FieldColumnInfo fieldColumnInfo) {
         this.objectClass = objectClass;
         this.field = field;
         this.annotation = sourceAnnotation;
         this.method = queryField.method();
         this.clauses = queryField.clauses();
         this.require = queryField.require();
-        this.mapping = queryField.mapping();
-
-
+        this.columnInfo = fieldColumnInfo;
+        this.mapping = Objects.nonNull(columnInfo)
+                ? columnInfo.getColumnInfo().getColumn()
+                : queryField.mapping();
         if (StrUtil.isBlank(mapping)) {
             this.mapping = field.getName();
         }

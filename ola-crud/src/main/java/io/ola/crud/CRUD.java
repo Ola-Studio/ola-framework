@@ -32,8 +32,7 @@ import io.ola.crud.service.QueryService;
 import io.ola.crud.service.impl.BaseCrudService;
 import io.ola.crud.service.impl.BaseMongoService;
 import jakarta.validation.groups.Default;
-import javassist.CtClass;
-import javassist.NotFoundException;
+import javassist.*;
 import org.apache.ibatis.type.JdbcType;
 import org.springframework.core.ResolvableType;
 
@@ -60,14 +59,13 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unchecked")
 public final class CRUD {
+    private static final ClassPool POOL = ClassPool.getDefault();
     public static final Class<?>[] SAVE_GROUPS = new Class<?>[]{Default.class, Save.class};
     public static final Class<?>[] MODIFY_GROUPS = new Class<?>[]{Default.class, Modify.class};
     private static final String ENTITY_DB_TYPE_MAP = "ENTITY_DB_TYPE_MAP";
-
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
     private static final CrudProperties CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class);
-
     private static final ConcurrentHashMap<Class<?>, String> STANDARD_MAPPING;
 
     static {
@@ -100,6 +98,21 @@ public final class CRUD {
         STANDARD_MAPPING.put(Time.class, JdbcType.TIME.name());
         STANDARD_MAPPING.put(Timestamp.class, JdbcType.TIMESTAMP.name());
         STANDARD_MAPPING.put(URL.class, JdbcType.DATALINK.name());
+    }
+
+    static {
+        //添加当前线程的ClassPath
+        POOL.appendClassPath(new LoaderClassPath(Thread.currentThread().getContextClassLoader()));
+        StringTokenizer token = new StringTokenizer(System.getProperty("java.class.path"), System.getProperty("path.separator"));
+
+        while (token.hasMoreElements()) {
+            try {
+                String classPath = token.nextToken();
+                POOL.appendClassPath(classPath);
+            } catch (Throwable ignore) {
+            }
+        }
+
     }
 
     public static String resolveJDBCType(Class<?> clazz) {
@@ -317,15 +330,15 @@ public final class CRUD {
         String formatName = String.format("%sCrudService$$javassist", entityClassName);
         Class<?> serviceClass;
         try {
-            serviceClass = JavassistUtils.defaultPool().getClassLoader().loadClass(formatName);
+            serviceClass = POOL.getClassLoader().loadClass(formatName);
         } catch (ClassNotFoundException e) {
             CtClass ctClass;
             try {
-                ctClass = JavassistUtils.defaultPool().getCtClass(formatName);
-                serviceClass = ctClass.getClass();
-            } catch (NotFoundException notFoundCtClass) {
+                ctClass = POOL.getCtClass(formatName);
+                serviceClass = ctClass.toClass();
+            } catch (NotFoundException | CannotCompileException notFoundCtClass) {
                 try {
-                    ctClass = JavassistUtils.defaultPool().makeClass(formatName, JavassistUtils.getClass(superServiceClass));
+                    ctClass = POOL.makeClass(formatName, JavassistUtils.getClass(superServiceClass));
                     JavassistUtils.addTypeArgument(ctClass, superServiceClass, new Class[]{entityClass}, null, null);
                     serviceClass = ctClass.toClass();
                 } catch (Throwable throwable) {

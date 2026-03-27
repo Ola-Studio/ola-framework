@@ -7,7 +7,9 @@ import io.ola.common.utils.WebUtils;
 import io.ola.crud.CRUD;
 import io.ola.crud.inject.ConditionInjector;
 import io.ola.crud.model.CrudMeta;
+import io.ola.crud.model.SortField;
 import io.ola.crud.query.QueryHelper;
+import io.ola.crud.query.SortHelper;
 import io.ola.crud.service.QueryService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,6 +69,15 @@ public interface BaseQueryAPI<ENTITY> {
         if (Objects.nonNull(conditionInjector)) {
             conditionInjector.inject(queryWrapper, crudMeta.getEntityClass());
         }
+
+        // 添加排序
+        Class<?> entityClass = crudMeta.getEntityClass();
+        List<SortField> sortFields = SortHelper.parseSort(WebUtils.getRequestParam("sort"));
+        if (sortFields.isEmpty()) {
+            sortFields = SortHelper.getDefaultSort(entityClass);
+        }
+        SortHelper.buildOrderBy(queryWrapper, sortFields);
+
         return queryWrapper;
     }
 

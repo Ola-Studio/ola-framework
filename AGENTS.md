@@ -148,6 +148,8 @@ Imports should follow this order (no blank lines between groups):
  * @date 2023/7/25
  */
 public interface BaseRESTAPI<ENTITY> {
+    
+}
 ```
 
 ---

@@ -65,7 +65,7 @@ public final class CRUD {
     private static final String ENTITY_DB_TYPE_MAP = "ENTITY_DB_TYPE_MAP";
     private static final Map<Class<?>, CrudMeta<?>> CRUD_META_MAP = new ConcurrentHashMap<>();
     private static final Map<Class<?>, EntityMeta<?>> ENTITY_META_MAP = new ConcurrentHashMap<>();
-    private static final CrudProperties CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class);
+    private static CrudProperties CRUD_PROPERTIES;
     private static final ConcurrentHashMap<Class<?>, String> STANDARD_MAPPING;
 
     static {
@@ -117,6 +117,20 @@ public final class CRUD {
 
     public static String resolveJDBCType(Class<?> clazz) {
         return STANDARD_MAPPING.getOrDefault(clazz, JdbcType.VARCHAR.name());
+    }
+
+    private static CrudProperties getCrudProperties() {
+        if (Objects.isNull(CRUD_PROPERTIES)) {
+            try {
+                CRUD_PROPERTIES = SpringUtils.getBean(CrudProperties.class, true);
+            } catch (Throwable ignore) {
+                // No Spring context available
+            }
+            if (Objects.isNull(CRUD_PROPERTIES)) {
+                CRUD_PROPERTIES = new CrudProperties();
+            }
+        }
+        return CRUD_PROPERTIES;
     }
 
 
@@ -261,7 +275,7 @@ public final class CRUD {
 
         entityMeta.setDeleteTagField(getDeleteTagField(entityClass));
         entityMeta.setSortTagField(getSortField(entityClass));
-        entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(CRUD_PROPERTIES.getDefaultDbType()));
+        entityMeta.setDbType(Optional.ofNullable(entityDbTypeMap.get(entityClass)).orElse(getCrudProperties().getDefaultDbType()));
         entityMeta.setBeforeSaveInjectMetas(getInjectFieldMetas(entityClass, BeforeSave.class));
         entityMeta.setBeforeUpdateInjectMetas(getInjectFieldMetas(entityClass, BeforeUpdate.class));
         return entityMeta;

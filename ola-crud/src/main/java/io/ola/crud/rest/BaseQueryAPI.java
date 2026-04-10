@@ -72,7 +72,7 @@ public interface BaseQueryAPI<ENTITY> {
 
         // 添加排序
         Class<?> entityClass = crudMeta.getEntityClass();
-        List<SortField> sortFields = SortHelper.parseSort(WebUtils.getRequestParam("sort"));
+        List<SortField> sortFields = SortHelper.parseSort(entityClass, WebUtils.getRequestParam("sort"));
         if (sortFields.isEmpty()) {
             sortFields = SortHelper.getDefaultSort(entityClass);
         }
